@@ -23,6 +23,15 @@ import { createPracticeWordNavigator } from './usePracticeWordNavigator.ts'
 import { usePracticeDisplayPolicy } from './usePracticeDisplayPolicy.ts'
 import type { PracticeNotifier } from './practice-flow-types.ts'
 import { createStudyTask } from './study-task.ts'
+import {
+  ensureUnitOffsets,
+  getActiveUnit,
+  getDictUnits,
+  getNextUnfinishedUnit,
+  getUnitOffset,
+  rollbackUnitProgress,
+  setUnitOffset,
+} from '@/core/utils/dict-units.ts'
 
 export interface PracticeWordSessionOptions {
   getPracticeData: () => PracticeData
@@ -252,15 +261,34 @@ export function usePracticeWordSession(options: PracticeWordSessionOptions) {
 
   function updateCompletedDictProgress(ignoreScope: 'remaining' | 'all') {
     if (getPracticeMode() === WordPracticeMode.Shuffle) return
-    store.sdict.lastLearnIndex += statStore.newWordNumber
+    const dict = store.sdict
+    ensureUnitOffsets(dict)
+    const units = getDictUnits(dict)
+    const unitMode = dict.studyMode === 'unit' && units.length > 0
     const ignoreList = [store.allIgnoreWords, store.knownWords][settingStore.ignoreSimpleWord ? 0 : 1]
-    const wordsToCheck = ignoreScope === 'remaining'
-      ? store.sdict.words.slice(store.sdict.lastLearnIndex)
-      : store.sdict.words
-    const ignoreCount = ignoreList.filter(key => wordsToCheck.some(word => word.word === key)).length
-    if (store.sdict.lastLearnIndex + ignoreCount >= store.sdict.length) {
-      store.sdict.complete = true
-      store.sdict.lastLearnIndex = store.sdict.length
+    const ignoreSet = new Set(ignoreList)
+    const targetUnit = unitMode
+      ? getActiveUnit(dict)
+      : units.find(u => dict.lastLearnIndex >= u.start && dict.lastLearnIndex < u.end) ?? null
+
+    if (!targetUnit) {
+      dict.lastLearnIndex = Math.min(dict.length, dict.lastLearnIndex + statStore.newWordNumber)
+      if (dict.lastLearnIndex >= dict.length) dict.complete = true
+      return
+    }
+
+    let next = Math.min(targetUnit.total, getUnitOffset(dict, targetUnit) + statStore.newWordNumber)
+    //剩余词全部是忽略词/已掌握时，直接把单元标记为学完，避免卡在永远不会推进的单元
+    const checkWords = ignoreScope === 'remaining' ? targetUnit.words.slice(next) : targetUnit.words
+    const restAllSkipped = checkWords.every(
+      word => ignoreSet.has(word.word) || (!unitMode && !!store.fsrsData[word.word])
+    )
+    if (restAllSkipped) next = targetUnit.total
+    setUnitOffset(dict, targetUnit, next)
+
+    if (unitMode && next >= targetUnit.total) {
+      const nextUnit = getNextUnfinishedUnit(dict)
+      if (nextUnit) dict.activeUnit = nextUnit.name
     }
   }
 
@@ -287,7 +315,7 @@ export function usePracticeWordSession(options: PracticeWordSessionOptions) {
     if (getPracticeMode() === WordPracticeMode.Shuffle) {
       taskWords.review = shuffle(taskWords.review.filter(word => !ignoreSet.has(word.word)))
     } else {
-      store.sdict.lastLearnIndex -= statStore.newWordNumber
+      rollbackUnitProgress(store.sdict, statStore.newWordNumber)
       taskWords.new = taskWords.new.filter(word => !ignoreSet.has(word.word))
       taskWords.review = taskWords.review.filter(word => !ignoreSet.has(word.word))
     }

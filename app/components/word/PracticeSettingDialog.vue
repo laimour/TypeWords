@@ -1,9 +1,8 @@
 <script setup lang="ts">
 import { _getAccomplishDays } from '@/core/utils'
-import { BaseButton, InputNumber, Slider, Tooltip, Toast } from '@/base'
+import { InputNumber, Slider, Tooltip, Toast } from '@/base'
 import { defineAsyncComponent, watch } from 'vue'
 import { useSettingStore } from '@/core/stores/setting'
-import ChangeLastPracticeIndexDialog from './ChangeLastPracticeIndexDialog.vue'
 import { useRuntimeStore } from '@/core/stores/runtime'
 import { BaseInput } from '@/base'
 
@@ -23,14 +22,12 @@ const emit = defineEmits<{
   ok: []
 }>()
 
-let show = $ref(false)
 let tempPerDayStudyNumber = $ref(0)
 let tempWordReviewRatio = $ref(0)
-let tempLastLearnIndex = $ref(0)
 
 async function changePerDayStudyNumber() {
+  //学习进度统一由单元进度管理，这里只调整每日目标与复习比例
   runtimeStore.editDict.perDayStudyNumber = Number(tempPerDayStudyNumber)
-  runtimeStore.editDict.lastLearnIndex = Number(tempLastLearnIndex)
   settings.wordReviewRatio = tempWordReviewRatio
   return props?.onConfirm?.()
 }
@@ -41,8 +38,6 @@ watch(
     if (n) {
       if (runtimeStore.editDict.id) {
         tempPerDayStudyNumber = runtimeStore.editDict.perDayStudyNumber
-        tempLastLearnIndex = runtimeStore.editDict.lastLearnIndex
-        if (tempLastLearnIndex >= runtimeStore.editDict.length) tempLastLearnIndex = runtimeStore.editDict.length
         tempWordReviewRatio = settings.wordReviewRatio
       } else {
         Toast.warning($t('please_select_dict'))
@@ -70,18 +65,14 @@ watch(
         <span
           >{{ $t('estimated')
           }}<span class="target-number mx-2">{{
-            _getAccomplishDays(runtimeStore.editDict.length - tempLastLearnIndex, tempPerDayStudyNumber)
+            _getAccomplishDays(runtimeStore.editDict.length - (runtimeStore.editDict.lastLearnIndex ?? 0), tempPerDayStudyNumber)
           }}</span
           >{{ $t('days_to_complete') }}</span
         >
       </div>
 
       <div class="text-center mt-4 mb-8 flex gap-1 items-end justify-center">
-        <span>{{ $t('from_word') }}</span>
-        <div class="w-20">
-          <BaseInput class="target-number" v-model="tempLastLearnIndex" />
-        </div>
-        <span>{{ $t('start_daily') }}</span>
+        <span>每日学习</span>
         <div class="w-16">
           <BaseInput class="target-number" v-model="tempPerDayStudyNumber" />
         </div>
@@ -116,30 +107,8 @@ watch(
         <span class="shrink-0 w-20">{{ $t('daily_learning') }}</span>
         <Slider show-text class="mt-1" :min="1" :max="500" v-model="tempPerDayStudyNumber" />
       </div>
-      <div class="flex gap-space">
-        <span class="shrink-0 w-20">{{ $t('learning_progress') }}</span>
-        <div class="flex-1">
-          <Slider
-            :min="0"
-            show-text
-            class="my-1"
-            :max="runtimeStore.editDict.words.length"
-            v-model="tempLastLearnIndex"
-          />
-          <BaseButton @click="show = true">{{ $t('select_from_dict') }}</BaseButton>
-        </div>
-      </div>
     </div>
   </Dialog>
-  <ChangeLastPracticeIndexDialog
-    v-model="show"
-    @ok="
-      e => {
-        tempLastLearnIndex = e
-        show = false
-      }
-    "
-  />
 </template>
 
 <style scoped lang="scss">

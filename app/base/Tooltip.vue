@@ -72,8 +72,17 @@ export default {
 </script>
 <style lang="scss" scoped>
 .tip {
-  background: var(--color-tooltip-bg);
-  max-width: 22rem;
-  @apply fixed z-9999 shadow-xl border-item-solid rounded-md px-2.5 py-1.5;
+  position: fixed;
+  z-index: 9999;
+  background: var(--md-sys-color-inverse-surface);
+  color: var(--md-sys-color-inverse-on-surface);
+  border: none;
+  border-radius: var(--md-sys-shape-sm);
+  box-shadow: var(--md-sys-elevation-2);
+  padding: 0.5rem 0.75rem;
+  max-width: 24rem;
+  font-size: 0.8125rem;
+  line-height: 1.5;
+  pointer-events: none;
 }
 </style>

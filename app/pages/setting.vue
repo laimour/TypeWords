@@ -861,21 +861,23 @@ function disable360() {
 
       .tab {
         @apply cursor-pointer flex items-center relative;
-        border-radius: 0.5rem;
-        @apply w-auto p-1 lg:w-40 lg:p-2;
-        gap: 0.6rem;
-        transition: all 0.5s;
+        border-radius: var(--md-sys-shape-full);
+        @apply w-auto p-2 lg:w-40;
+        gap: 0.75rem;
+        color: var(--md-sys-color-on-surface-variant);
+        transition: background-color 0.2s ease, color 0.2s ease;
 
         svg {
           @apply text-lg shrink-0;
         }
 
         &:hover {
-          background: var(--color-fourth);
+          background: color-mix(in srgb, var(--md-sys-color-on-surface) 8%, transparent);
         }
 
         &.active {
-          background: var(--color-fourth);
+          background: var(--md-sys-color-secondary-container);
+          color: var(--md-sys-color-on-secondary-container);
         }
       }
     }
@@ -948,7 +950,7 @@ function disable360() {
     }
 
     .line {
-      border-bottom: 1px solid #c4c3c3;
+      border-bottom: 1px solid var(--md-sys-color-outline-variant);
     }
   }
 }

@@ -373,18 +373,18 @@ onBeforeUnmount(() => {
     top: 50%;
     left: 0;
     right: 0;
-    height: 6px;
-    background-color: #ddd;
-    border-radius: 2px;
+    height: 4px;
+    background-color: var(--md-sys-color-surface-variant);
+    border-radius: var(--md-sys-shape-full);
     transform: translateY(-50%);
   }
 
   &__fill {
     position: absolute;
     top: 50%;
-    height: 6px;
-    background-color: #409eff;
-    border-radius: 2px;
+    height: 4px;
+    background-color: var(--md-sys-color-primary);
+    border-radius: var(--md-sys-shape-full);
     transform: translateY(-50%);
     pointer-events: auto;
 
@@ -400,19 +400,20 @@ onBeforeUnmount(() => {
   &__thumb {
     position: absolute;
     top: 50%;
-    width: 16px;
-    height: 16px;
-    background-color: #fff;
-    border: 2px solid #409eff;
+    width: 18px;
+    height: 18px;
+    background-color: var(--md-sys-color-primary);
+    border: none;
     border-radius: 50%;
     transform: translate(-50%, -50%);
     cursor: grab;
     transition: box-shadow 0.2s;
     z-index: 1;
+    box-shadow: var(--md-sys-elevation-1);
 
     &:focus {
       outline: none;
-      box-shadow: 0 0 5px #409eff;
+      box-shadow: 0 0 0 6px color-mix(in srgb, var(--md-sys-color-primary) 15%, transparent);
       cursor: grabbing;
     }
   }

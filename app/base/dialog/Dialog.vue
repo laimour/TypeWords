@@ -221,7 +221,7 @@ $time: 0.3s;
 
   .modal-mask {
     @apply fixed top-0 left-0 w-full h-full transition-all duration-300;
-    background: rgba(#000, 0.6);
+    background: color-mix(in srgb, var(--md-sys-color-scrim) 45%, transparent);
     animation: fade-in $time;
 
     &.bounce-out {
@@ -231,7 +231,8 @@ $time: 0.3s;
 
   .window {
     animation: bounce-in $time ease-out;
-    @apply shadow-lg rounded-lg;
+    @apply rounded-[28px];
+    box-shadow: var(--md-sys-elevation-3);
 
     &.bounce-out {
       opacity: 0;
@@ -250,17 +251,27 @@ $time: 0.3s;
 
   .modal {
     @apply relative overflow-hidden flex flex-col transition-all duration-300;
-    background: var(--color-card-bg);
+    background: var(--md-sys-color-surface-container-high);
+    color: var(--md-sys-color-on-surface);
 
     .close {
-      @apply absolute right-1.2rem top-1.2rem z-999;
+      @apply absolute right-4 top-4 z-999 flex items-center justify-center rounded-full cursor-pointer;
+      width: 2.5rem;
+      height: 2.5rem;
+      color: var(--md-sys-color-on-surface-variant);
+      transition: background-color 0.2s ease;
+
+      &:hover {
+        background: color-mix(in srgb, var(--md-sys-color-on-surface) 8%, transparent);
+      }
     }
 
     .modal-header {
-      @apply flex justify-between items-center p-5 pb-0 rounded-t-lg;
+      @apply flex justify-between items-center p-6 pb-2;
 
       .title {
-        @apply font-bold text-xl;
+        @apply font-medium text-xl;
+        color: var(--md-sys-color-on-surface);
       }
     }
 
@@ -268,12 +279,12 @@ $time: 0.3s;
       @apply box-border text-main-text font-normal text-base leading-6 w-full flex-1 overflow-hidden flex;
 
       &.padding {
-        @apply p-1 px-5;
+        @apply p-2 px-6 pb-6;
       }
     }
 
     .modal-footer {
-      @apply flex justify-between p-5;
+      @apply flex justify-between p-6;
     }
   }
 }

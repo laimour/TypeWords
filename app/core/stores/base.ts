@@ -231,6 +231,12 @@ export const useBaseStore = defineStore('base', {
         this.word.bookList[this.word.studyIndex].lastLearnIndex = val.lastLearnIndex
         this.word.bookList[this.word.studyIndex].userDictId = val.userDictId
         this.word.bookList[this.word.studyIndex].complete = val.complete
+        this.word.bookList[this.word.studyIndex].unitWordKeys = val.unitWordKeys
+        this.word.bookList[this.word.studyIndex].studyMode = val.studyMode
+        this.word.bookList[this.word.studyIndex].activeUnit = val.activeUnit
+        this.word.bookList[this.word.studyIndex].unitOffsets = val.unitOffsets
+        this.word.bookList[this.word.studyIndex].unitProgressInitialized = val.unitProgressInitialized
+        this.word.bookList[this.word.studyIndex].unitNameSchema = val.unitNameSchema
       } else {
         this.word.bookList.push(getDefaultDict(val))
         this.word.studyIndex = this.word.bookList.length - 1

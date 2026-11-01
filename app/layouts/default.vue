@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import { BaseIcon, ToastComponent } from '@/base'
-import Logo from '@/components/Logo.vue'
 import IeDialog from '@/components/dialog/IeDialog.vue'
 import useTheme from '@/core/hooks/theme.ts'
 import { useRuntimeStore } from '@/core/stores/runtime.ts'
@@ -14,24 +13,51 @@ import { useI18n } from 'vue-i18n'
 import { Supabase } from '@/core/utils/supabase.ts'
 import MiniProgram from '@/components/MiniProgram.vue'
 import WordCollectPopover from '@/components/word/WordCollectPopover.vue'
+import { msIcon } from '@/components/dashboard/icons'
 
 const router = useRouter()
 const { toggleTheme, getTheme, setTheme } = useTheme()
 const runtimeStore = useRuntimeStore()
 const settingStore = useSettingStore()
-let expand = $ref(false)
 const init = useInit()
 
-function toggleExpand(n: boolean) {
-  expand = n
-  document.documentElement.style.setProperty('--aside-width', n ? '14rem' : '4.5rem')
+/* ---------------- 左侧 M3 Navigation Rail（demo 同款） ---------------- */
+
+/** 收起 / 展开时侧边栏宽度（96px rail / 280px 展开） */
+const RAIL_WIDTH = '96px'
+const RAIL_EXPANDED_WIDTH = '280px'
+
+function syncAsideWidth(expanded: boolean) {
+  document.documentElement.style.setProperty('--aside-width', expanded ? RAIL_EXPANDED_WIDTH : RAIL_WIDTH)
+}
+
+const { locales, setLocale, t: $t } = useI18n()
+const route = useRoute()
+
+const railItems = $computed(() => [
+  { value: 'words', label: $t('words'), icon: msIcon('home'), path: '/words' },
+  { value: 'articles', label: $t('articles'), icon: msIcon('menu_book'), path: '/articles' },
+  { value: 'feedback', label: $t('feedback'), icon: msIcon('forum'), path: '/feedback' },
+  { value: 'doc', label: $t('document'), icon: msIcon('description'), path: '/doc' },
+  { value: 'help', label: $t('help'), icon: msIcon('help'), path: '/help' },
+  { value: 'setting', label: $t('setting'), icon: msIcon('settings'), path: '/setting' },
+])
+
+const activeRail = $computed(() => {
+  const path = route.path || ''
+  return railItems.find(i => path === i.path || path.startsWith(`${i.path}/`))?.value ?? ''
+})
+
+function onRailChange(e: Event) {
+  const value = (e as CustomEvent<{ value: string }>).detail?.value
+  const item = railItems.find(i => i.value === value)
+  if (item) router.push(item.path)
 }
 
 watch(
   () => settingStore.load,
   n => {
     if (!n) return
-    toggleExpand(settingStore.sideExpand)
     setTheme(settingStore.theme)
   }
 )
@@ -43,9 +69,6 @@ watch(
   }
 )
 
-const { locales, setLocale } = useI18n()
-const route = useRoute()
-
 const showIcon = $computed(() => {
   return ['/words', '/articles', '/setting', '/help', '/doc', '/feedback'].includes(route.path)
 })
@@ -54,67 +77,31 @@ onMounted(() => {
   init()
   window.umami?.track('sync', { check: Supabase.check() })
 })
-
-function onMouseEnter() {
-  !settingStore.sideExpand && toggleExpand(true)
-}
-
-function onMouseLeave() {
-  !settingStore.sideExpand && toggleExpand(false)
-}
 </script>
 
 <template>
   <div class="layout anim">
     <!--    第一个aside 占位用-->
     <div class="aside space"></div>
-    <div class="aside fixed" :class="!expand && 'hidden-span'" @mouseenter="onMouseEnter" @mouseleave="onMouseLeave">
-      <div class="top p-4">
-        <div v-if="expand" class="flex justify-between">
-          <Logo />
-          <BaseIcon
-            class="transform-scale-80 border border-1 border-solid border-gray"
-            @click="settingStore.sideExpand = !settingStore.sideExpand"
-          >
-            <IconFluentPin24Filled
-              v-if="settingStore.sideExpand"
-              class="flex-shrink-0 -transform-rotate-45 color-gray"
-            />
-            <IconFluentPin20Regular v-else class="flex-shrink-0 -transform-rotate-45" />
-          </BaseIcon>
-        </div>
-        <NuxtLink to="/words" class="row">
-          <IconFluentTextUnderlineDouble20Regular />
-          <span>{{ $t('words') }}</span>
-        </NuxtLink>
-        <NuxtLink id="article" to="/articles" class="row">
-          <IconFluentBookLetter20Regular />
-          <span>{{ $t('articles') }}</span>
-        </NuxtLink>
-        <NuxtLink to="/feedback" class="row">
-          <IconFluentCommentEdit20Regular />
-          <span>{{ $t('feedback') }}</span>
-        </NuxtLink>
-        <NuxtLink to="/doc" class="row">
-          <IconFluentDocument20Regular />
-          <span>{{ $t('document') }}</span>
-        </NuxtLink>
-        <NuxtLink to="/help" class="row">
-          <IconFluentQuestionCircle20Regular />
-          <span>{{ $t('help') }}</span>
-        </NuxtLink>
-        <!--        <div class="row" @click="router.push('/user')">-->
-        <!--          <IconFluentPerson20Regular/>-->
-        <!--          <span >用户</span>-->
-        <!--        </div>-->
-      </div>
-      <div class="px-4 pb-2 border-0 border-t-1 border-solid border-[var(--color-line)]">
-        <NuxtLink to="/setting" class="row">
-          <IconFluentSettings20Regular />
-          <span>{{ $t('setting') }}</span>
-          <div class="red-point" :class="!settingStore.sideExpand && 'top-1 right-0'" v-if="runtimeStore.isError"></div>
-        </NuxtLink>
-      </div>
+    <div class="aside fixed rail-aside">
+      <m-navigation-rail
+        :value="activeRail || undefined"
+        expanded-width="280"
+        :expand-label="$t('expand')"
+        :collapse-label="$t('collapse')"
+        @change="onRailChange"
+        @expand="syncAsideWidth(true)"
+        @collapse="syncAsideWidth(false)"
+      >
+        <m-navigation-rail-item
+          v-for="item in railItems"
+          :key="item.value"
+          :value="item.value"
+          :label="item.label"
+          :icon="item.icon"
+          :badge="item.value === 'setting' && runtimeStore.isError ? '' : undefined"
+        />
+      </m-navigation-rail>
     </div>
 
     <!-- 移动端顶部菜单栏 -->
@@ -203,38 +190,26 @@ function onMouseLeave() {
 }
 
 .aside {
-  background: var(--color-second);
+  background: var(--md-sys-color-surface-container-low);
   height: 100vh;
   box-sizing: border-box;
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  box-shadow: rgb(0 0 0 / 3%) 0px 0px 12px 0px;
+  border-right: 1px solid var(--md-sys-color-outline-variant);
   width: var(--aside-width);
-  transition: all 0.3s;
+  transition: width 0.3s;
   z-index: 2;
   overflow: hidden;
+}
 
-  &.hidden-span {
-    span {
-      opacity: 0;
-    }
-  }
-  .row {
-    @apply cp rounded-md text p-2 my-2 flex items-center gap-2 relative shrink-0 hover:bg-fourth;
-    transition: all 0.5s;
-    color: var(--color-main-text);
+/* M3 Navigation Rail（demo 同款）：96px 收起，展开按钮切到 280px */
+.rail-aside {
+  display: block;
+  padding: 0;
 
-    &.router-link-active {
-      background: var(--color-fourth);
-    }
-
-    svg {
-      @apply shrink-0 text-lg;
-    }
-    span {
-      @apply shrink-0;
-    }
+  m-navigation-rail {
+    display: block;
+    height: 100%;
+    /* 侧栏底色比页面高一级，和 demo 的 rail 面板观感一致 */
+    --mtrl-sys-color-surface: var(--md-sys-color-surface-container-low);
   }
 }
 
@@ -244,59 +219,58 @@ function onMouseLeave() {
   top: 0;
   left: 0;
   right: 0;
-  background: var(--color-second);
-  border-bottom: 1px solid var(--color-item-border);
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  background: var(--md-sys-color-surface-container-low);
+  border-bottom: 1px solid var(--md-sys-color-outline-variant);
   z-index: 1000;
   transition: all 0.3s ease;
 
   .nav-items {
     display: flex;
     justify-content: space-around;
-    padding: 0.5rem 0;
+    padding: 0.4rem 0.5rem;
 
     .nav-item {
       display: flex;
       flex-direction: column;
       align-items: center;
-      padding: 0.5rem;
+      padding: 0.35rem 0.9rem;
       cursor: pointer;
-      transition: all 0.2s;
+      border-radius: var(--md-sys-shape-full);
+      transition: background-color 0.2s ease, color 0.2s ease;
       min-height: 44px;
       min-width: 44px;
       justify-content: center;
       position: relative;
+      color: var(--md-sys-color-on-surface-variant);
 
       svg {
         font-size: 1.2rem;
         margin-bottom: 0.2rem;
-        color: var(--color-main-text);
+        color: inherit;
       }
 
       span {
         font-size: 0.7rem;
-        color: var(--color-main-text);
+        color: inherit;
         text-align: center;
       }
 
       &.active {
-        svg,
-        span {
-          color: var(--color-select-bg);
-        }
+        background: var(--md-sys-color-secondary-container);
+        color: var(--md-sys-color-on-secondary-container);
       }
 
       &:active {
-        transform: scale(0.95);
+        opacity: 0.8;
       }
 
       .red-point {
         position: absolute;
         top: 0.2rem;
-        right: 0.2rem;
+        right: 0.4rem;
         width: 0.4rem;
         height: 0.4rem;
-        background: #ff4444;
+        background: var(--md-sys-color-error);
         border-radius: 50%;
       }
     }
@@ -307,17 +281,17 @@ function onMouseLeave() {
     bottom: -1.5rem;
     left: 50%;
     transform: translateX(-50%);
-    background: var(--color-second);
-    border: 1px solid var(--color-item-border);
+    background: var(--md-sys-color-surface-container-low);
+    border: 1px solid var(--md-sys-color-outline-variant);
     border-top: none;
-    border-radius: 0 0 0.5rem 0.5rem;
+    border-radius: 0 0 var(--md-sys-shape-md) var(--md-sys-shape-md);
     padding: 0.3rem 0.8rem;
     cursor: pointer;
     transition: all 0.3s;
 
     svg {
       font-size: 1rem;
-      color: var(--color-main-text);
+      color: var(--md-sys-color-on-surface-variant);
     }
 
     &:active {

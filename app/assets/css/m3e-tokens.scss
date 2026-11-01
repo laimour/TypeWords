@@ -1,0 +1,52 @@
+/**
+ * mtrl（M3 Expressive Web Components）主题 token 桥接。
+ *
+ * 背景：mtrl 自带样式（styles.css）通过 @media (prefers-color-scheme: dark) 判断明暗，
+ * 用户在项目里手动切换 light 时系统媒体查询仍可能是 dark，会和项目主题打架。
+ *
+ * 方案：把 demo 里的 --mtrl-sys-color-* 全部映射到项目已有 --md-sys-color-*
+ * （见 main.scss，:root 为 M3 baseline light、html.dark 为 M3 baseline dark，
+ * 与 demo 深色紫色主题取值完全一致），随 html.dark 自动切换。
+ *
+ * 选择器用 html:root / html:root.dark（优先级高于 mtrl 的 :root 与媒体查询内 ：root），
+ * 保证无论 CSS 加载顺序如何都能覆盖 mtrl 默认值。
+ */
+
+html:root {
+  --mtrl-sys-color-primary: var(--md-sys-color-primary);
+  --mtrl-sys-color-on-primary: var(--md-sys-color-on-primary);
+  --mtrl-sys-color-primary-container: var(--md-sys-color-primary-container);
+  --mtrl-sys-color-on-primary-container: var(--md-sys-color-on-primary-container);
+  --mtrl-sys-color-secondary: var(--md-sys-color-secondary);
+  --mtrl-sys-color-on-secondary: var(--md-sys-color-on-secondary);
+  --mtrl-sys-color-secondary-container: var(--md-sys-color-secondary-container);
+  --mtrl-sys-color-on-secondary-container: var(--md-sys-color-on-secondary-container);
+  --mtrl-sys-color-tertiary: var(--md-sys-color-tertiary);
+  --mtrl-sys-color-on-tertiary: var(--md-sys-color-on-tertiary);
+  --mtrl-sys-color-tertiary-container: var(--md-sys-color-tertiary-container);
+  --mtrl-sys-color-on-tertiary-container: var(--md-sys-color-on-tertiary-container);
+  --mtrl-sys-color-surface: var(--md-sys-color-surface);
+  --mtrl-sys-color-surface-dim: var(--md-sys-color-surface-dim);
+  --mtrl-sys-color-surface-bright: var(--md-sys-color-surface-container-high);
+  --mtrl-sys-color-surface-variant: var(--md-sys-color-surface-variant);
+  --mtrl-sys-color-surface-container-lowest: var(--md-sys-color-surface-container-lowest);
+  --mtrl-sys-color-surface-container-low: var(--md-sys-color-surface-container-low);
+  --mtrl-sys-color-surface-container: var(--md-sys-color-surface-container);
+  --mtrl-sys-color-surface-container-high: var(--md-sys-color-surface-container-high);
+  --mtrl-sys-color-surface-container-highest: var(--md-sys-color-surface-container-highest);
+  --mtrl-sys-color-on-surface: var(--md-sys-color-on-surface);
+  --mtrl-sys-color-on-surface-variant: var(--md-sys-color-on-surface-variant);
+  --mtrl-sys-color-outline: var(--md-sys-color-outline);
+  --mtrl-sys-color-outline-variant: var(--md-sys-color-outline-variant);
+  --mtrl-sys-color-inverse-surface: var(--md-sys-color-inverse-surface);
+  --mtrl-sys-color-inverse-on-surface: var(--md-sys-color-inverse-on-surface);
+  --mtrl-sys-color-inverse-primary: var(--md-sys-color-primary);
+  --mtrl-sys-color-error: var(--md-sys-color-error);
+  --mtrl-sys-color-on-error: var(--md-sys-color-on-error);
+  --mtrl-sys-color-error-container: var(--md-sys-color-error-container);
+  color-scheme: light dark;
+}
+
+html:root.dark {
+  color-scheme: dark;
+}

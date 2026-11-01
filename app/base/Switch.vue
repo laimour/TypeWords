@@ -41,9 +41,9 @@ const onKeydown = (e: KeyboardEvent) => {
   }
 }
 
-const switchWidth = computed(() => props.width ?? 40)
-const switchHeight = computed(() => (switchWidth.value / 2) | 0)
-const ballSize = computed(() => switchHeight.value - 4)
+const switchWidth = computed(() => props.width ?? 52)
+const switchHeight = computed(() => Math.round(switchWidth.value * 0.6))
+const ballSize = computed(() => switchHeight.value - 8)
 </script>
 
 <template>
@@ -65,7 +65,7 @@ const ballSize = computed(() => switchHeight.value - 4)
       :style="{
         width: ballSize + 'px',
         height: ballSize + 'px',
-        transform: isChecked ? 'translateX(' + (switchWidth - ballSize - 2) + 'px)' : 'translateX(2px)',
+        transform: isChecked ? 'translateX(' + (switchWidth - ballSize - 4) + 'px)' : 'translateX(4px)',
       }"
     ></div>
     <transition name="fade">
@@ -76,59 +76,48 @@ const ballSize = computed(() => switchHeight.value - 4)
 
 <style scoped lang="scss">
 .switch {
-  @apply inline-flex items-center cursor-pointer user-select-none outline-none  position-relative transition-all duration-300;
+  @apply inline-flex items-center cursor-pointer user-select-none outline-none position-relative;
+  transition: background-color 0.2s ease, border-color 0.2s ease;
+  border: 2px solid var(--md-sys-color-outline);
+  background: var(--md-sys-color-surface-container-highest);
+  box-sizing: content-box;
 
   .ball {
-    @apply bg-white rounded-full transition-transform duration-300 box-shadow-sm absolute;
+    @apply rounded-full absolute;
+    background: var(--md-sys-color-outline);
+    transition: transform 0.25s cubic-bezier(0.2, 0, 0, 1), background-color 0.2s ease, width 0.2s ease, height 0.2s ease;
   }
 
   .text {
-    @apply absolute text-xs   user-select-none;
-    font-size: 0.75rem;
+    @apply absolute user-select-none;
+    font-size: 0.625rem;
+    color: var(--md-sys-color-on-surface-variant);
     &.left {
-      @apply ml-1.5;
+      @apply ml-2;
     }
     &.right {
-      @apply right-1.5;
+      @apply right-2;
     }
   }
 
-  &.primary {
-    @apply bg-gray-200;
-
-    .ball {
-      @apply bg-white;
-    }
-    .text {
-      @apply text-black-500;
-    }
-    &.checked {
-      @apply bg-blue-500;
-      .text {
-        @apply text-white;
-      }
-    }
-  }
-
+  &.primary,
   &.info {
-    @apply bg-white;
-
-    .ball {
-      @apply bg-gray-200;
-    }
-    .text {
-      @apply text-gray-500;
-    }
     &.checked {
-      @apply bg-blue-500;
+      background: var(--md-sys-color-primary);
+      border-color: var(--md-sys-color-primary);
+
+      .ball {
+        background: var(--md-sys-color-on-primary);
+      }
       .text {
-        @apply text-gray-200;
+        color: var(--md-sys-color-on-primary);
       }
     }
   }
 
   &.disabled {
-    @apply cursor-not-allowed opacity-60;
+    @apply cursor-not-allowed;
+    opacity: 0.38;
   }
 }
 </style>

@@ -107,70 +107,32 @@ defineExpose({
 
 <style scoped lang="scss">
 .message {
-  border: 1px solid #ebeef5;
   transition: all 0.3s ease;
   pointer-events: auto;
-  @apply rounded-md py-3 px-5 relative min-w-50 text-base;
+  @apply rounded-lg py-3 px-4 relative min-w-50 text-sm;
+  background: var(--md-sys-color-inverse-surface);
+  color: var(--md-sys-color-inverse-on-surface);
+  box-shadow: var(--md-sys-elevation-3);
 
   &.shadow {
-    @apply shadow-xl;
+    box-shadow: var(--md-sys-elevation-3);
   }
 
-  &.success {
-    background: #f0f9ff;
-    border-color: #67c23a;
-    color: #67c23a;
+  &.success .message-icon {
+    color: #7adc8a;
   }
 
-  &.warning {
-    background: #fdf6ec;
-    border-color: #e6a23c;
-    color: #e6a23c;
+  &.warning .message-icon {
+    color: #f7c66b;
   }
 
-  &.info {
-    background: #f4f4f5;
-    border-color: #c1c1c1;
-    color: #909399;
+  &.info .message-icon {
+    color: var(--md-sys-color-inverse-on-surface);
+    opacity: 0.8;
   }
 
-  &.error {
-    background: #fef0f0;
-    border-color: #f56c6c;
-    color: #f56c6c;
-  }
-}
-
-// 深色模式支持
-html.dark {
-  .message {
-    background: var(--color-second);
-    border-color: var(--color-item-border);
-    color: var(--color-main-text);
-
-    &.success {
-      background: rgb(42, 50, 40);
-      border-color: #67c23a;
-      color: #67c23a;
-    }
-
-    &.warning {
-      background: rgb(51, 47, 40);
-      border-color: #e6a23c;
-      color: #e6a23c;
-    }
-
-    &.info {
-      background: rgb(44, 45, 48);
-      border-color: #909399;
-      color: #909399;
-    }
-
-    &.error {
-      background: #342a2b;
-      border-color: #f56c6c;
-      color: #f56c6c;
-    }
+  &.error .message-icon {
+    color: #ff8b84;
   }
 }
 
@@ -183,11 +145,16 @@ html.dark {
 }
 
 .message-action {
-  @apply ml-2 shrink-0 cp text-sm font-medium px-2 py-0.5 rounded color-blue;
-  border: 1px solid currentColor;
+  @apply ml-2 shrink-0 cp text-sm font-medium px-2 py-0.5 rounded-full;
+  color: var(--md-sys-color-inverse-primary, #d0bcff);
+  border: none;
   background: transparent;
   line-height: 1.4;
   transition: opacity 0.2s;
+
+  &:hover {
+    opacity: 0.8;
+  }
 }
 
 .message-close {

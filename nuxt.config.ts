@@ -50,6 +50,12 @@ const appBaseURL = normalizeBaseURL(process.env.NUXT_APP_BASE_URL || '/')
 export default defineNuxtConfig({
   compatibilityDate: '2025-07-15',
   devtools: { enabled: true },
+  vue: {
+    compilerOptions: {
+      // Sober（s-*）与 mtrl（m-*）Web Components 按自定义元素处理，避免 Vue 编译警告
+      isCustomElement: (tag) => tag.startsWith('s-') || tag.startsWith('m-'),
+    },
+  },
   app: {
     baseURL: appBaseURL,
     // keepalive: true,
@@ -63,9 +69,11 @@ export default defineNuxtConfig({
   },
   // ssr: false,
   routeRules: {
-    '/words': { ssr: false },
-    '/articles': { ssr: false },
-    '/setting': { ssr: false },
+    // SPA 壳入口必须禁缓存，否则发版后浏览器沿用旧 index.html，用户看不到新 UI
+    '/words': { ssr: false, headers: { 'Cache-Control': 'no-cache' } },
+    '/dashboard': { ssr: false, headers: { 'Cache-Control': 'no-cache' } },
+    '/articles': { ssr: false, headers: { 'Cache-Control': 'no-cache' } },
+    '/setting': { ssr: false, headers: { 'Cache-Control': 'no-cache' } },
     '/book/nce1': { prerender: true },
     '/book/nce2': { prerender: true },
     '/book/nce3': { prerender: true },

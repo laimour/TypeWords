@@ -1,20 +1,74 @@
 @use 'anim' as *;
 @use 'shepherd.css';
+@use 'm3e-tokens';
 
 :root {
+  /* ========== Material Design 3 Tokens (Light) ========== */
+  --md-sys-color-primary: #6750a4;
+  --md-sys-color-on-primary: #ffffff;
+  --md-sys-color-primary-container: #eaddff;
+  --md-sys-color-on-primary-container: #21005d;
+  --md-sys-color-secondary: #625b71;
+  --md-sys-color-on-secondary: #ffffff;
+  --md-sys-color-secondary-container: #e8def8;
+  --md-sys-color-on-secondary-container: #1d192b;
+  --md-sys-color-tertiary: #7d5260;
+  --md-sys-color-on-tertiary: #ffffff;
+  --md-sys-color-tertiary-container: #ffd8e4;
+  --md-sys-color-on-tertiary-container: #31111d;
+  --md-sys-color-error: #b3261e;
+  --md-sys-color-on-error: #ffffff;
+  --md-sys-color-error-container: #f9dedc;
+  /* 语义状态色（M3 自定义 success，明暗两套均保证 AA 对比度） */
+  --md-sys-color-success: #146c2e;
+  --md-sys-color-on-success: #ffffff;
+  --md-sys-color-success-container: #c4eed0;
+  --md-sys-color-on-success-container: #072711;
+  --md-sys-color-surface: #fef7ff;
+  --md-sys-color-surface-dim: #ded8e1;
+  --md-sys-color-surface-container-lowest: #ffffff;
+  --md-sys-color-surface-container-low: #f7f2fa;
+  --md-sys-color-surface-container: #f3edf7;
+  --md-sys-color-surface-container-high: #ece6f0;
+  --md-sys-color-surface-container-highest: #e6e0e9;
+  --md-sys-color-on-surface: #1d1b20;
+  --md-sys-color-on-surface-variant: #49454f;
+  --md-sys-color-outline: #79747e;
+  --md-sys-color-outline-variant: #cac4d0;
+  --md-sys-color-inverse-surface: #322f35;
+  --md-sys-color-inverse-on-surface: #f5eff7;
+  --md-sys-color-scrim: #000000;
+  --md-sys-color-surface-variant: #e7e0ec;
+
+  --md-sys-shape-xs: 4px;
+  --md-sys-shape-sm: 8px;
+  --md-sys-shape-md: 12px;
+  --md-sys-shape-lg: 16px;
+  --md-sys-shape-xl: 28px;
+  --md-sys-shape-full: 999px;
+
+  --md-sys-elevation-1: 0 1px 2px rgba(0, 0, 0, 0.3), 0 1px 3px 1px rgba(0, 0, 0, 0.15);
+  --md-sys-elevation-2: 0 1px 2px rgba(0, 0, 0, 0.3), 0 2px 6px 2px rgba(0, 0, 0, 0.15);
+  --md-sys-elevation-3: 0 4px 8px 3px rgba(0, 0, 0, 0.15), 0 1px 3px rgba(0, 0, 0, 0.3);
+
+  --md-sys-state-hover-opacity: 0.08;
+  --md-sys-state-focus-opacity: 0.12;
+  --md-sys-state-pressed-opacity: 0.12;
+
   --color-reverse-white: white;
   --color-reverse-black: black;
-  --bg-history: white;
-  --color-item-border: rgb(226, 226, 226);
+  --bg-history: var(--md-sys-color-surface-container-lowest);
+  --color-item-border: var(--md-sys-color-outline-variant);
 
-  --color-tooltip-bg: white;
-  --color-font-2: rgb(46, 46, 46);
-  --color-font-3: rgb(102, 116, 135);
+  --color-tooltip-bg: var(--md-sys-color-inverse-surface);
+  --color-font-2: var(--md-sys-color-on-surface-variant);
+  --color-font-3: var(--md-sys-color-outline);
   --color-font-active-1: white;
-  --color-scrollbar: #c1c1c1;
+  --color-scrollbar: var(--md-sys-color-outline-variant);
 
   --color-sub-gray: #c0bfbf;
-  --aside-width: 4.5rem;
+  /* 与 M3 navigation rail 的 96px 收起宽度对齐 */
+  --aside-width: 96px;
 
   --article-width: 50vw;
   --article-toolbar-width: 50vw;
@@ -30,99 +84,135 @@
   --word-panel-margin-left: calc(50vw + var(--aside-width) / 2 + var(--toolbar-width) / 2 + 1rem);
   --anim-time: 0.5s;
 
-  --color-input-color: black;
-  --color-input-bg: white;
-  --color-input-border: #bfbfbf;
-  --color-input-icon: #d3d4d7;
+  --color-input-color: var(--md-sys-color-on-surface);
+  --color-input-bg: var(--md-sys-color-surface-container-lowest);
+  --color-input-border: var(--md-sys-color-outline);
+  --color-input-icon: var(--md-sys-color-on-surface-variant);
 
-  --color-textarea-bg: white;
-  --color-article: black;
+  --color-textarea-bg: var(--md-sys-color-surface-container-lowest);
+  --color-article: var(--md-sys-color-on-surface);
 
 
-  --font-family: -apple-system, sans-serif;
+  --font-family: 'Roboto', 'Noto Sans SC', -apple-system, sans-serif;
   --word-font-family: ui-monospace, sans-serif;
   --en-article-family: Georgia, sans-serif;
   --zh-article-family: 'Songti SC', 'SimSun', 'Noto Serif CJK SC', serif;
 
-  --color-primary: #e6e8eb;
-  --color-primary2: white;
-  --color-second: rgb(247, 247, 247);
-  --color-third: rgb(228, 230, 232);
-  --color-fourth: rgb(218, 220, 222);
-  --color-fifth: rgb(253, 246, 236);
+  --color-primary: var(--md-sys-color-surface);
+  --color-primary2: var(--md-sys-color-surface-container-lowest);
+  --color-second: var(--md-sys-color-surface-container-low);
+  --color-third: var(--md-sys-color-surface-container-high);
+  --color-fourth: var(--md-sys-color-secondary-container);
+  --color-fifth: var(--md-sys-color-primary-container);
 
-  //--color-card-active: #FED7AA;
-  --color-card-active: rgb(253, 246, 236);
-  --color-sub-text: gray;
-  --color-main-text: rgb(91, 91, 91);
-  --color-select-bg: rgb(12, 140, 233);
+  --color-card-active: var(--md-sys-color-secondary-container);
+  --color-sub-text: var(--md-sys-color-on-surface-variant);
+  --color-main-text: var(--md-sys-color-on-surface);
+  --color-select-bg: var(--md-sys-color-primary);
 
-  --color-progress-bar: #d1d5df;
+  --color-progress-bar: var(--md-sys-color-surface-variant);
 
-  --color-label-bg: whitesmoke;
-  --color-link: #2563eb;
+  --color-label-bg: var(--md-sys-color-surface-container);
+  --color-link: var(--md-sys-color-primary);
 
-  --color-card-bg: white;
+  --color-card-bg: var(--md-sys-color-surface-container);
 
-  --bg-card-primary: white;
-  --bg-card-secend: rgb(247, 247, 247);
+  --bg-card-primary: var(--md-sys-color-surface-container-low);
+  --bg-card-secend: var(--md-sys-color-surface-container);
 
-  --bg-book: rgb(226 232 240);
+  --bg-book: var(--md-sys-color-surface-container-high);
 
-  --color-line: rgb(226, 226, 226);
+  --color-line: var(--md-sys-color-outline-variant);
 
-  --color-translate-main: black;
-  --color-translate-second: #818181;
+  --color-translate-main: var(--md-sys-color-on-surface);
+  --color-translate-second: var(--md-sys-color-on-surface-variant);
 
   --book-width: 9.6rem;
-  --book-border: rgb(225, 217, 217);
+  --book-border: var(--md-sys-color-outline-variant);
 }
 
 html.dark {
+  /* ========== Material Design 3 Tokens (Dark) ========== */
+  --md-sys-color-primary: #d0bcff;
+  --md-sys-color-on-primary: #381e72;
+  --md-sys-color-primary-container: #4f378b;
+  --md-sys-color-on-primary-container: #eaddff;
+  --md-sys-color-secondary: #ccc2dc;
+  --md-sys-color-on-secondary: #332d41;
+  --md-sys-color-secondary-container: #4a4458;
+  --md-sys-color-on-secondary-container: #e8def8;
+  --md-sys-color-tertiary: #efb8c8;
+  --md-sys-color-on-tertiary: #492532;
+  --md-sys-color-tertiary-container: #633b48;
+  --md-sys-color-on-tertiary-container: #ffd8e4;
+  --md-sys-color-error: #f2b8b5;
+  --md-sys-color-on-error: #601410;
+  --md-sys-color-error-container: #8c1d18;
+  /* 语义状态色（M3 自定义 success，暗色套件） */
+  --md-sys-color-success: #6dd58c;
+  --md-sys-color-on-success: #003916;
+  --md-sys-color-success-container: #1e4527;
+  --md-sys-color-on-success-container: #b6f2c4;
+  --md-sys-color-surface: #141218;
+  --md-sys-color-surface-dim: #141218;
+  --md-sys-color-surface-container-lowest: #0f0d13;
+  --md-sys-color-surface-container-low: #1d1b20;
+  --md-sys-color-surface-container: #211f26;
+  --md-sys-color-surface-container-high: #2b2930;
+  --md-sys-color-surface-container-highest: #36343b;
+  --md-sys-color-on-surface: #e6e0e9;
+  --md-sys-color-on-surface-variant: #cac4d0;
+  --md-sys-color-outline: #938f99;
+  --md-sys-color-outline-variant: #49454f;
+  --md-sys-color-inverse-surface: #e6e0e9;
+  --md-sys-color-inverse-on-surface: #322f35;
+  --md-sys-color-scrim: #000000;
+  --md-sys-color-surface-variant: #49454f;
+
   --color-reverse-white: black;
   --color-reverse-black: white;
 
-  --color-primary: #202124;
-  --color-second: #292a2d;
-  --color-third: #35373a;
-  --color-fourth: rgb(70, 70, 70);
-  --color-fifth: rgb(84, 84, 84);
+  --color-primary: var(--md-sys-color-surface);
+  --color-primary2: var(--md-sys-color-surface-container-low);
+  --color-second: var(--md-sys-color-surface-container-low);
+  --color-third: var(--md-sys-color-surface-container-high);
+  --color-fourth: var(--md-sys-color-secondary-container);
+  --color-fifth: var(--md-sys-color-primary-container);
 
-  --color-card-active: rgb(84, 84, 84);
-  --color-sub-text: #b8b8b8;
-  --color-main-text: rgba(249, 250, 251, 0.8);
-  --color-select-bg: rgb(147, 173, 227);
+  --color-card-active: var(--md-sys-color-secondary-container);
+  --color-sub-text: var(--md-sys-color-on-surface-variant);
+  --color-main-text: var(--md-sys-color-on-surface);
+  --color-select-bg: var(--md-sys-color-primary);
 
-  --bg-history: rgb(43, 45, 48);
-  --color-item-border: rgb(41, 41, 41);
+  --bg-history: var(--md-sys-color-surface-container-lowest);
+  --color-item-border: var(--md-sys-color-outline-variant);
 
-  --color-tooltip-bg: #35373a;
-  --color-font-2: rgba(255, 255, 255, 0.5);
-  --color-font-3: rgba(255, 255, 255, 0.3);
+  --color-tooltip-bg: var(--md-sys-color-inverse-surface);
+  --color-font-2: var(--md-sys-color-on-surface-variant);
+  --color-font-3: var(--md-sys-color-outline);
 
-  --color-sub-gray: #383737;
-  --color-scrollbar: rgb(92, 93, 94);
+  --color-sub-gray: var(--md-sys-color-outline-variant);
+  --color-scrollbar: var(--md-sys-color-outline-variant);
 
-  --color-input-color: white;
-  --color-input-bg: var(--color-third);
+  --color-input-color: var(--md-sys-color-on-surface);
+  --color-input-bg: var(--md-sys-color-surface-container-lowest);
 
-  --color-textarea-bg: rgb(43, 45, 48);
-  --color-article: white;
+  --color-textarea-bg: var(--md-sys-color-surface-container-lowest);
+  --color-article: var(--md-sys-color-on-surface);
 
-  --color-progress-bar: rgb(73, 77, 82) !important;
+  --color-progress-bar: var(--md-sys-color-surface-variant);
 
-  --color-label-bg: rgb(10, 10, 10);
+  --color-label-bg: var(--md-sys-color-surface-container-high);
 
-  --color-card-bg: var(--color-second);
-  --color-primary2: var(--color-second);
+  --color-card-bg: var(--md-sys-color-surface-container);
 
-  --bg-card-primary: rgb(30, 31, 34);
-  --bg-card-secend: rgb(43, 45, 48);
+  --bg-card-primary: var(--md-sys-color-surface-container-low);
+  --bg-card-secend: var(--md-sys-color-surface-container);
 
-  --bg-book: #35373a;
+  --bg-book: var(--md-sys-color-surface-container-high);
 
-  --color-line: rgb(66, 66, 66);
-  --book-border: var(--bg-book);
+  --color-line: var(--md-sys-color-outline-variant);
+  --book-border: var(--md-sys-color-outline-variant);
 }
 
 @media (max-width: 1706px) {
@@ -292,9 +382,12 @@ a {
 }
 
 .common-list-item {
-  @apply cursor-pointer w-full box-border bg-third rounded-lg flex justify-between gap-1 transition-all duration-300 p-2;
+  @apply cursor-pointer w-full box-border flex justify-between gap-1 transition-all duration-200 p-3;
   color: var(--color-main-text);
-  border: 1px solid var(--color-item-border);
+  border-radius: var(--md-sys-shape-md);
+  background: var(--md-sys-color-surface-container-low);
+  border: 1px solid transparent;
+  position: relative;
 
   .left {
     @apply flex gap-1;
@@ -316,10 +409,13 @@ a {
   }
 
   &.active {
-    @apply bg-fifth opacity-100;
+    @apply opacity-100;
+    background: var(--md-sys-color-secondary-container);
+    color: var(--md-sys-color-on-secondary-container);
 
     .item-sub-title {
-      color: var(--color-sub-text);
+      color: var(--md-sys-color-on-secondary-container);
+      opacity: 0.8;
     }
   }
 
@@ -428,28 +524,35 @@ a {
 
 .book {
   @extend .anim;
-  @apply p-3 rounded-md relative cursor-pointer hover:bg-fifth border-item-solid flex flex-col justify-between shrink-0;
-  background: var(--bg-book);
-  border: 1px solid transparent;
-  border-color: var(--book-border);
+  @apply p-3 relative cursor-pointer flex flex-col justify-between shrink-0;
+  background: var(--md-sys-color-surface-container-high);
+  border: 1px solid var(--md-sys-color-outline-variant);
+  border-radius: var(--md-sys-shape-lg);
   box-sizing: border-box;
   width: var(--book-width);
   height: calc(var(--book-width) * 1.4);
+
+  &:hover {
+    background: var(--md-sys-color-surface-container-highest);
+    box-shadow: var(--md-sys-elevation-1);
+  }
 }
 
 .line {
   width: 100%;
   border-bottom: 1px solid var(--color-line);
-  @apply hover:text-blue-700;
 }
 
 .line-white {
   width: 100%;
-  border-bottom: 1px dashed #ababab;
+  border-bottom: 1px dashed var(--md-sys-color-outline-variant);
 }
 
 .page-title {
   @apply text-2xl;
+  color: var(--md-sys-color-on-surface);
+  font-weight: 500;
+  letter-spacing: 0;
 }
 
 .red-point {

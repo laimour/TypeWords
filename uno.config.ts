@@ -24,7 +24,7 @@ export default defineConfig({
     'py-space': 'py-[var(--space)]',
     'border-item': 'border-[var(--color-item-border)]',
     'border-item-solid': 'border-1 border-solid border-[var(--color-item-border)]',
-    card: 'rounded-xl p-4 mb-8 shadow-lg box-border relative bg-second',
+    card: 'rounded-[16px] p-5 mb-6 box-border relative bg-[var(--md-sys-color-surface-container)] shadow-[var(--md-sys-elevation-1)]',
     'color-translate-main': 'color-[var(--color-translate-main)]',
     'color-translate-second': 'color-[var(--color-translate-second)]',
     'en-article-family': 'font-[var(--en-article-family)]',

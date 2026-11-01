@@ -34,6 +34,41 @@
 <img width="1920" height="1440" alt="practice words" src="/public/imgs/words.png" />
 <img width="1920" height="1440" alt="practice articles" src="/public/imgs/articles.png" />
 
+## Fork Enhancements (Material 3 Expressive Dashboard)
+
+This repository is a fork of [zyronon/TypeWords](https://github.com/zyronon/TypeWords). On top of the original project, this fork adds a Material 3 Expressive (M3E) UI layer and several learning-management pages.
+
+### New Dashboard
+
+- `/words` now serves the new M3E dashboard, `/dashboard` is kept as a comparison entry, and `/words-classic` preserves the previous home page.
+- Built with the `mtrl` and `sober` web component libraries, with light/dark themes bridged through `app/assets/css/m3e-tokens.scss`.
+- Statistics area: KPI overview with dictionary / current-unit scope switching, heatmap study calendar (click a day to open its study records), and a 7-day bar chart.
+- Today task card: start review, add word, and jump back to the last practice position.
+- Unit progress cards with circular wavy progress, plus dialogs to adjust unit progress and pick which words of a unit to practice.
+- My dictionaries card with all / built-in / custom segmented filtering, and quick join for recommended dictionaries.
+
+### New Pages and Utilities
+
+- `/dict-units/[id]`: dictionary unit detail page.
+- `/import-words`: word import page supporting multiple input formats.
+- `app/core/utils/dict-units.ts` and `app/core/utils/importWords.ts`: unit splitting and word import helpers.
+- `server/api/word.get.ts` and `server/api/translate.get.ts`: local dictionary and translation API routes.
+
+### Other
+
+- i18n keys completed for all 14 locales.
+- `Cache-Control: no-cache` response headers for `/words`, `/articles`, `/setting` and `/dashboard` to avoid stale pages after a release.
+- Added dependencies: `mtrl ^0.10.8`, `sober ^1.1.10`.
+
+### 中文说明
+
+- 本仓库是 [TypeWords](https://github.com/zyronon/TypeWords) 的 fork，在原有功能之上新增了 Material 3 Expressive 风格的仪表盘与词典单元相关页面。
+- `/words` 为新的 M3E 仪表盘首页，`/dashboard` 作为对照入口，`/words-classic` 保留旧版首页。
+- 统计区支持词典 / 当前单元口径切换，包含网格热力日历（点击某天可查看当天的学习记录）与近 7 日学习柱状图。
+- 今日任务卡支持开始复习、添加单词与回到上次练习位置；单元进度卡支持调整进度、挑选本单元要练习的单词。
+- 新增词典单元详情页 `/dict-units/[id]`、单词导入页 `/import-words`，以及本地词典 / 翻译接口。
+- 补齐 14 种语言的 i18n 文案，并为 `/words`、`/articles`、`/setting`、`/dashboard` 增加 `Cache-Control: no-cache` 响应头。
+
 ## Features
 
 ### Word Practice

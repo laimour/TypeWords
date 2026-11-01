@@ -1,5 +1,7 @@
 declare module 'node-forge'
 
+declare module 'sober'
+
 declare global {
   interface Console {
     parse(v: any): void

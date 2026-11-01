@@ -2,32 +2,25 @@
 import { _nextTick, groupBy, isMobile, loadJsLib, resourceWrap, useNav } from '@/core/utils'
 import { BackIcon, BaseButton, BaseIcon, BaseInput, BasePage } from '@/base'
 import type { DictResource } from '@/core/types/types.ts'
-import { useRuntimeStore } from '@/core/stores/runtime.ts'
 import Empty from '@/components/Empty.vue'
 import DictList from '@/components/list/DictList.vue'
 import DictGroup from '@/components/list/DictGroup.vue'
 import { useBaseStore } from '@/core/stores/base.ts'
 import { useRouter } from 'vue-router'
 import { computed, watch } from 'vue'
-import { getDefaultDict } from '@/core/types/func.ts'
 import { useFetch } from '@vueuse/core'
 import { DICT_LIST, LIB_JS_URL, TourConfig } from '@/core/config/env.ts'
 import { useSettingStore } from '@/core/stores/setting.ts'
 
 const { nav } = useNav()
-const runtimeStore = useRuntimeStore()
 const settingStore = useSettingStore()
 const store = useBaseStore()
 const router = useRouter()
 
 function selectDict(e) {
-  console.log(e.dict)
-  getDictDetail(e.dict)
-}
-
-async function getDictDetail(val: DictResource) {
-  runtimeStore.editDict = getDefaultDict(val)
-  nav('/dict', { from: 'list' })
+  if (!e.dict?.id) return
+  //进入词典二级菜单（单元管理）
+  nav('/dict-units/' + e.dict.id)
 }
 
 function groupByDictTags(dictList: DictResource[]) {
@@ -118,8 +111,9 @@ watch(dict_list, val => {
           <BaseInput clearable placeholder="请输入词典名称/缩写/类别" v-model="searchKey" class="flex-1" autofocus />
           <BaseButton @click="((showSearchInput = false), (searchKey = ''))">{{ $t('cancel') }}</BaseButton>
         </div>
-        <div class="py-1 flex flex-1 justify-end" v-else>
+        <div class="py-1 flex flex-1 justify-end items-center" v-else>
           <span class="page-title absolute w-full center">{{ $t('dict_list') }}</span>
+          <BaseButton size="small" class="z-1 mr-2" @click="nav('/import-words')">导入单词</BaseButton>
           <BaseIcon :title="$t('search')" @click="showSearchInput = true" class="z-1" icon="fluent:search-24-regular">
             <IconFluentSearch24Regular />
           </BaseIcon>

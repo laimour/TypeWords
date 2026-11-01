@@ -60,42 +60,41 @@ function onClick() {
   }
 
   .radio__inner {
-    width: 16px;
-    height: 16px;
+    width: 20px;
+    height: 20px;
     border-radius: 50%;
     display: inline-block;
     margin-right: 6px;
     position: relative;
     box-sizing: border-box;
-    background: white;
-    border: 1px solid gainsboro;
+    background: transparent;
+    border: 2px solid var(--md-sys-color-on-surface-variant);
 
     &::after {
       content: '';
       position: absolute;
       top: 50%;
       left: 50%;
-      width: 5px;
-      height: 5px;
-      background-color: #409eff;
+      width: 10px;
+      height: 10px;
+      background-color: var(--md-sys-color-primary);
       border-radius: 50%;
       transform: translate(-50%, -50%) scale(0);
       transition: transform 0.2s ease-in-out;
     }
   }
- 
+
 
   &.is-checked {
     .radio__inner {
-      background-color: #409eff;
+      border-color: var(--md-sys-color-primary);
     }
 
     .radio__label {
-      color: #409eff;
+      color: var(--md-sys-color-primary);
     }
 
     .radio__inner::after {
-      background-color: white;
       transform: translate(-50%, -50%) scale(1);
     }
   }
@@ -103,15 +102,15 @@ function onClick() {
 
 .radio--small {
   .radio__inner {
-    width: 14px;
-    height: 14px;
+    width: 16px;
+    height: 16px;
   }
 }
 
 .radio--large {
   .radio__inner {
-    width: 20px;
-    height: 20px;
+    width: 24px;
+    height: 24px;
   }
 }
 

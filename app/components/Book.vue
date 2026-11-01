@@ -92,13 +92,14 @@ function handleClick(e: MouseEvent) {
 <style scoped lang="scss">
 .book-selectable {
   &:hover {
-    border-color: var(--color-input-border);
+    border-color: var(--md-sys-color-primary);
   }
 }
 
 .book-selected {
-  @apply bg-fifth;
-  border-color: var(--color-select-bg) !important;
+  background: var(--md-sys-color-primary-container) !important;
+  color: var(--md-sys-color-on-primary-container);
+  border-color: var(--md-sys-color-primary) !important;
 }
 
 .custom {
@@ -106,8 +107,8 @@ function handleClick(e: MouseEvent) {
   top: 4px;
   right: -22px;
   padding: 1px 20px;
-  background: #409eff;
-  color: white;
+  background: var(--md-sys-color-primary);
+  color: var(--md-sys-color-on-primary);
   font-size: 11px;
   transform: rotate(45deg);
 }
@@ -116,11 +117,10 @@ function handleClick(e: MouseEvent) {
   position: absolute;
   left: 10px;
   bottom: 18px;
-  border-radius: 8px;
+  border-radius: var(--md-sys-shape-full);
   padding: 2px 8px;
-  // background: var(--color-link);
-  background: #409eff;
-  color: white;
+  background: var(--md-sys-color-secondary-container);
+  color: var(--md-sys-color-on-secondary-container);
   font-size: 11px;
 }
 

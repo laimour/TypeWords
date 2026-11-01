@@ -170,56 +170,63 @@ const vFocus = {
   display: inline-flex;
   box-sizing: border-box;
   width: 100%;
-  border: 1px solid var(--color-input-border);
-  border-radius: 6px;
+  border: 1px solid var(--md-sys-color-outline);
+  border-radius: var(--md-sys-shape-xs);
   overflow: hidden;
-  padding: 0.2rem 0.3rem;
-  transition: all 0.3s;
+  padding: 0 0.75rem;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
   align-items: center;
-  background: var(--color-input-bg);
+  min-height: 3rem;
+  background: var(--md-sys-color-surface-container-lowest);
+  color: var(--md-sys-color-on-surface);
 
   ::placeholder {
-    font-size: 0.9rem;
-    color: darkgray;
+    font-size: 0.875rem;
+    color: var(--md-sys-color-on-surface-variant);
+    opacity: 0.8;
+  }
+
+  &:hover:not(.focus):not(.error) {
+    border-color: var(--md-sys-color-on-surface);
   }
 
   // normal size (default)
   &--normal {
-    padding: 0.2rem 0.3rem;
-
     .inner {
-      height: 1.5rem;
+      height: 2rem;
       font-size: 1rem;
     }
   }
 
   // large size
   &--large {
-    padding: 0.4rem 0.6rem;
-    border-radius: 0.5rem;
+    padding: 0 1.5rem;
+    border-radius: var(--md-sys-shape-xl);
+    min-height: 3.5rem;
 
     .inner {
-      height: 2rem;
-      font-size: 1.125rem;
+      height: 2.25rem;
+      font-size: 1.0625rem;
     }
   }
 
   &.is-disabled {
     opacity: 0.6;
+    background: color-mix(in srgb, var(--md-sys-color-on-surface) 4%, transparent);
   }
 
   &.error {
-    border-color: #f56c6c;
-    background: rgba(245, 108, 108, 0.07);
+    border-color: var(--md-sys-color-error);
+
+    .inner {
+      color: var(--md-sys-color-error);
+    }
   }
 
   &.focus {
-    border: 1px solid var(--color-select-bg);
-  }
-
-  &:disabled {
-    background-color: #f5f5f5;
-    cursor: not-allowed;
+    border-color: var(--md-sys-color-primary);
+    box-shadow: inset 0 0 0 1px var(--md-sys-color-primary);
+    background: var(--md-sys-color-surface-container-lowest);
   }
 
   // PreIcon styling
@@ -233,11 +240,10 @@ const vFocus = {
     display: flex;
     align-items: center;
     justify-content: center;
-    color: var(--color-input-color);
-    opacity: 0.6;
+    color: var(--md-sys-color-on-surface-variant);
     z-index: 1;
     pointer-events: none;
-    margin-right: 0.2rem;
+    margin-right: 0.25rem;
   }
 
   .inner {
@@ -246,9 +252,9 @@ const vFocus = {
     outline: none;
     border: none;
     box-sizing: border-box;
-    transition: all 0.3s;
-    height: 1.5rem;
-    color: var(--color-input-color);
+    transition: color 0.2s ease;
+    height: 2rem;
+    color: var(--md-sys-color-on-surface);
     background: transparent;
     width: 100%;
   }
@@ -258,16 +264,16 @@ const vFocus = {
     display: flex;
     align-items: center;
     justify-content: center;
-    width: 20px;
-    height: 20px;
+    width: 24px;
+    height: 24px;
     margin-left: 4px;
+    border-radius: var(--md-sys-shape-full);
     cursor: pointer;
-    color: var(--color-input-color);
-    opacity: 0.6;
-    transition: opacity 0.2s;
+    color: var(--md-sys-color-on-surface-variant);
+    transition: background-color 0.2s ease, opacity 0.2s ease;
 
     &:hover {
-      opacity: 1;
+      background: color-mix(in srgb, var(--md-sys-color-on-surface) 8%, transparent);
     }
 
     &.is-loading {

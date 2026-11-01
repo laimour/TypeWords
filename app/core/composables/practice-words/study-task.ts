@@ -3,11 +3,18 @@ import { useBaseStore } from '@/core/stores/base.ts'
 import { useSettingStore } from '@/core/stores/setting.ts'
 import type { TaskWords, Word } from '@/core/types/types.ts'
 import { shuffle } from '@/core/utils'
+import { ensureUnitOffsets, getActiveUnit, getDictUnits, getUnitOffset } from '@/core/utils/dict-units.ts'
+
+export interface StudyTaskScope {
+  mode: 'book' | 'unit'
+  unit?: string
+}
 
 export interface StudyTaskResult {
   taskWords: TaskWords
   dueReviewCount: number
   randomReviewCount: number
+  scope?: StudyTaskScope
 }
 
 interface AddRandomReviewOptions {
@@ -51,12 +58,23 @@ export function addRandomReviewWhenNoDue(taskWords: TaskWords, options: AddRando
 export function createStudyTask(): StudyTaskResult {
   const store = useBaseStore()
   const settingStore = useSettingStore()
-  return addRandomReviewWhenNoDue(getCurrentStudyWord(), {
-    words: store.sdict.words,
-    lastLearnIndex: store.sdict.lastLearnIndex,
-    perDayStudyNumber: store.sdict.perDayStudyNumber,
+  const dict = store.sdict
+  ensureUnitOffsets(dict)
+  const unitMode = dict.studyMode === 'unit' && getDictUnits(dict).length > 0
+  //单元模式只从当前单元取词，进度以该单元 offset 为准
+  const activeUnit = unitMode ? getActiveUnit(dict) : null
+  const words = activeUnit ? activeUnit.words : dict.words
+  const lastLearnIndex = activeUnit ? getUnitOffset(dict, activeUnit) : dict.lastLearnIndex
+  const result = addRandomReviewWhenNoDue(getCurrentStudyWord(), {
+    words,
+    lastLearnIndex,
+    perDayStudyNumber: dict.perDayStudyNumber,
     wordReviewRatio: settingStore.wordReviewRatio,
     ignoreSet: store.getIgnoreWordsSet(),
     enabled: settingStore.autoAddRandomReviewWhenNoDue,
   })
+  return {
+    ...result,
+    scope: { mode: unitMode ? 'unit' : 'book', unit: activeUnit?.name },
+  }
 }

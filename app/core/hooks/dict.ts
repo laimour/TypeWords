@@ -1,5 +1,5 @@
 import type { Article, Dict, TaskWords, Word } from '../types'
-import { DictType, getDefaultDict, getDefaultWord } from '../types'
+import { DictType, getDefaultDict } from '../types'
 import { useBaseStore } from '../stores/base.ts'
 import { useSettingStore } from '../stores/setting.ts'
 import { _getDictDataByUrl, cloneDeep, isDictIdMatch, resourceWrap, shuffle } from '../utils'
@@ -9,6 +9,7 @@ import { useRuntimeStore } from '../stores/runtime.ts'
 import { useRoute, useRouter } from 'vue-router'
 import dayjs from 'dayjs'
 import isSameOrBefore from 'dayjs/plugin/isSameOrBefore'
+import { advancePointerPastFinishedUnits, ensureUnitOffsets, getActiveUnit, getUnitOffset } from '../utils/dict-units.ts'
 
 dayjs.extend(isSameOrBefore)
 
@@ -139,41 +140,45 @@ export function getCurrentStudyWord(): TaskWords {
   const store = useBaseStore()
   let data: TaskWords = { new: [], review: [] }
   let dict = store.sdict
-  let isTest = false
   let words = dict.words.slice()
-  if (isTest) {
-    words = Array.from({ length: 10 }).map((v, i) => {
-      return getDefaultWord({ word: String(i) })
-    })
-  }
 
   if (words?.length) {
     const settingStore = useSettingStore()
+    const units = ensureUnitOffsets(dict)
+    //单元模式：只学习当前单元；整本模式：按整本游标顺序
+    const unitMode = dict.studyMode === 'unit' && units.length > 0
+    const activeUnit = unitMode ? getActiveUnit(dict) : null
+    if (activeUnit) dict.activeUnit = activeUnit.name
+    const scopeWords = activeUnit ? activeUnit.words.slice() : words
+    if (!unitMode) advancePointerPastFinishedUnits(dict)
+
     //忽略列表：简单词或已掌握
     const ignoreSet = [store.allIgnoreWordsSet, store.knownWordsSet][settingStore.ignoreSimpleWord ? 0 : 1]
     const perDay = dict.perDayStudyNumber
-    const start = isTest ? 1 : dict.lastLearnIndex
-    const complete = isTest ? true : dict.complete
-    const isEnd = start >= dict.length - 1 && dict.length !== 1
+    const start = activeUnit
+      ? getUnitOffset(dict, activeUnit)
+      : Math.min(Math.max(0, dict.lastLearnIndex), scopeWords.length)
+    const complete = dict.complete
+    const isEnd = start >= scopeWords.length - 1 && scopeWords.length !== 1
     const reviewRatio = settingStore.wordReviewRatio
 
-    let end = start
     if (!isEnd) {
       //从start往后取perDay个单词，作为新词
-      for (let i = start; i < words.length; i++) {
-        let item = words[i]
+      for (let i = start; i < scopeWords.length; i++) {
+        let item = scopeWords[i]
         if (data.new.length >= perDay) break
-        if (!ignoreSet.has(item.word)) {
+        //整本模式额外跳过已有 FSRS 记录的词（单元模式以手动进度为准，不跳过）
+        const alreadyStudied = !activeUnit && !!store.fsrsData[item.word]
+        if (!ignoreSet.has(item.word) && !alreadyStudied) {
           data.new.push(item)
         }
-        end++
       }
     }
 
     //如果复习比大于等于1，或者已完成，才生成复习词
     if (reviewRatio >= 1 || complete || isEnd) {
       //Map建立索引，用于查找、包含
-      const wordMap = new Map(words.map(s => [s.word, s]))
+      const wordMap = new Map(scopeWords.map(s => [s.word, s]))
       //复习总数量;如果已结束那么复习比最小是1
       const totalNeed = perDay * (isEnd ? reviewRatio || 1 : reviewRatio)
       const now = dayjs()
@@ -182,10 +187,9 @@ export function getCurrentStudyWord(): TaskWords {
       let reviewWordStrList = Object.entries(store.fsrsData)
         .filter(([word, card]) => {
           //1、这里的due字段被json序列化之后又恢复是字符串了，所以要用dayjs比较
-          //2、要在当前学习这本词典里面
+          //2、要在当前学习范围里面（单元模式仅本单元）
           //3、不在新词里面
           //4、到自然日就算到期
-          // console.log(`单词：${word},到期时间：${dayjs(card.due).format('YYYY-MM-DD HH:mm:ss')}`)
           let isMastered = ignoreSet.has(word)
           if (isMastered) {
             waitRemoveFromFsrsData.push(word)
@@ -203,7 +207,6 @@ export function getCurrentStudyWord(): TaskWords {
       waitRemoveFromFsrsData.map(word => {
         delete store.fsrsData[word]
       })
-      // console.log('fsrs 里 due 到期单词', reviewWordStrList)
 
       data.review = shuffle(
         reviewWordStrList
@@ -211,20 +214,6 @@ export function getCurrentStudyWord(): TaskWords {
           .map(word => wordMap.get(word))
           .filter(obj => obj)
       )
-      //如果数量不够再填充
-      // if (data.review.length < totalNeed) {
-      //   // 固定填充逻辑
-      //   let list = words.slice(0, start).reverse()
-      //   if (complete) list = list.concat(words.slice(end).reverse())
-      //   // 固定填充复习词需要过滤掉有FSRS记录的
-      //   let set = new Set(
-      //     Array.from(ignoreSet)
-      //       .concat(Object.keys(store.fsrsData))
-      //       .concat(data.new.map(v => v.word))
-      //   )
-      //   list = list.filter(item => !set.has(item.word))
-      //   data.review = data.review.concat(list.slice(0, totalNeed - data.review.length))
-      // }
     }
   }
   return data

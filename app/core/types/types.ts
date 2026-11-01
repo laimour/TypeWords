@@ -36,6 +36,8 @@ export type Word = {
     t: string //title
     d: string //desc
   }[]
+  /** 所属单元名（导入时由 `unit 名字` / `第N单元` 标题行识别，同一名字自然合并） */
+  unit?: string
 }
 export type TranslateLanguageType = 'en' | 'zh-CN' | 'ja' | 'de' | 'common' | ''
 export type LanguageType = 'en' | 'ja' | 'de' | 'code'
@@ -132,6 +134,18 @@ export interface Dict extends DictResource {
   system?: boolean //是否是系统虚拟词典（收藏/错词/已掌握/文章收藏），可编辑词条但不能改名，不显示tag
   sourceId?: string //如果是官方资源副本，这里记录原始官方资源 id
   complete: boolean //是否学习完成，学完了设为true，然后lastLearnIndex重置
+  /** 学习模式：整本顺序 / 按单元 */
+  studyMode?: 'book' | 'unit'
+  /** 当前单元名 */
+  activeUnit?: string
+  /** 手动划分的单元成员（单元名 → 单词数组），官方词典刷新拉词后按此重放 Word.unit */
+  unitWordKeys?: Record<string, string[]>
+  /** 单元进度唯一权威值：key 为单元名，value 为已学词数 */
+  unitOffsets?: Record<string, number>
+  /** 是否已从旧 lastLearnIndex 迁移过单元进度 */
+  unitProgressInitialized?: boolean
+  /** 单元标识是否已升级为名字制；旧数字制存档的 unitWordKeys 不做重放（视为无效数据） */
+  unitNameSchema?: boolean
   //后端字段
   enName?: string
   createdBy?: string

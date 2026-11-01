@@ -16,7 +16,7 @@ const props = withDefaults(defineProps<IProps>(), {
   showText: true,
   textInside: false,
   strokeWidth: 6,
-  color: '#409eff',
+  color: 'var(--md-sys-color-primary)',
   active: true,
   format: (percentage) => `${percentage}%`,
   size: 'normal',
@@ -72,8 +72,8 @@ const content = computed(() => {
 
   .progress-bar {
     width: 100%;
-    border-radius: 100px;
-    background-color: var(--color-progress-bar);
+    border-radius: var(--md-sys-shape-full);
+    background-color: var(--md-sys-color-surface-variant);
     overflow: hidden;
     position: relative;
     vertical-align: middle;
@@ -81,14 +81,14 @@ const content = computed(() => {
     .progress-bar-inner {
       position: relative;
       height: 100%;
-      border-radius: 100px;
-      transition: width 0.6s ease;
+      border-radius: var(--md-sys-shape-full);
+      transition: width 0.6s cubic-bezier(0.2, 0, 0, 1);
       text-align: right;
 
       .progress-bar-text {
         display: inline-block;
         vertical-align: middle;
-        color: #fff;
+        color: var(--md-sys-color-on-primary);
         font-size: 12px;
         margin: 0 5px;
         white-space: nowrap;
@@ -99,7 +99,7 @@ const content = computed(() => {
   .progress-bar-text {
     margin-left: 5px;
     min-width: 50px;
-    color: var(--el-text-color-regular);
+    color: var(--md-sys-color-on-surface-variant);
     font-size: 14px;
     text-align: center;
     flex-shrink: 0;

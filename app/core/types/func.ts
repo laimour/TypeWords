@@ -70,6 +70,14 @@ export function getDefaultDict(val: Partial<Dict> = {}): Dict {
     system: false,
     sourceId: '',
     complete: false,
+    studyMode: 'book',
+    activeUnit: undefined,
+    //占位键：checkRiskKey 按默认键名拷贝存档字段，缺了会导致加载时丢失单元数据
+    unitWordKeys: undefined,
+    unitOffsets: undefined,
+    unitProgressInitialized: undefined,
+    /** 单元标识是否已升级为名字制；旧数字制存档的 unitWordKeys 不做重放（视为无效数据） */
+    unitNameSchema: undefined,
 
     createdBy: '',
     enName: '',

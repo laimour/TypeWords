@@ -28,6 +28,7 @@ import {
 } from '../config/env'
 import { nextTick } from 'vue'
 import { Toast } from '@/base'
+import { applyUnitWordKeys } from './dict-units'
 import { get } from 'idb-keyval'
 import { nanoid } from 'nanoid'
 import { saveHashSnapshot } from '../composables/useDataSyncPersistence'
@@ -374,7 +375,10 @@ export async function _getDictDataByUrl(val: DictResource, type: DictType = Dict
     if (type === DictType.article) {
       return getDefaultDict({ ...val, articles: s })
     } else {
-      return getDefaultDict({ ...val, words: s })
+      const dict = getDefaultDict({ ...val, words: s })
+      //官方词典词条重新拉取后不带 unit 字段，按保存的单元成员关系重放归属
+      applyUnitWordKeys(dict)
+      return dict
     }
   }
   return getDefaultDict()

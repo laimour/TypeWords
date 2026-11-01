@@ -229,7 +229,7 @@ const { data: recommendBookList, isFetching } = useFetch(resourceWrap(DICT_LIST.
             <div class="flex gap-4 color-gray">
               <div
                 class="w-6 h-6 md:w-8 md:h-8 rounded-md center text-sm md:text-base"
-                :class="item ? 'bg-[#409eff] color-white' : 'bg-gray-200'"
+                :class="item ? 'bg-[var(--md-sys-color-primary)] color-white' : 'bg-gray-200'"
                 v-for="(item, i) in weekList"
                 :key="i"
               >
@@ -245,19 +245,19 @@ const { data: recommendBookList, isFetching } = useFetch(resourceWrap(DICT_LIST.
           <div
             class="w-full sm:flex-1 rounded-xl p-4 box-border relative bg-[var(--bg-history)] border border-gray-200"
           >
-            <div class="text-[#409eff] text-xl font-bold">{{ todayTotalSpend }}</div>
+            <div class="text-[var(--md-sys-color-primary)] text-xl font-bold">{{ todayTotalSpend }}</div>
             <div class="text-gray-500">{{ $t('today_study_time') }}</div>
           </div>
           <div
             class="w-full sm:flex-1 rounded-xl p-4 box-border relative bg-[var(--bg-history)] border border-gray-200"
           >
-            <div class="text-[#409eff] text-xl font-bold">{{ totalDay }}</div>
+            <div class="text-[var(--md-sys-color-primary)] text-xl font-bold">{{ totalDay }}</div>
             <div class="text-gray-500">{{ $t('total_study_days') }}</div>
           </div>
           <div
             class="w-full sm:flex-1 rounded-xl p-4 box-border relative bg-[var(--bg-history)] border border-gray-200"
           >
-            <div class="text-[#409eff] text-xl font-bold">{{ totalSpend }}</div>
+            <div class="text-[var(--md-sys-color-primary)] text-xl font-bold">{{ totalSpend }}</div>
             <div class="text-gray-500">{{ $t('total_study_time') }}</div>
           </div>
         </div>
@@ -350,7 +350,7 @@ const { data: recommendBookList, isFetching } = useFetch(resourceWrap(DICT_LIST.
   border: 1px solid gainsboro;
 
   .num {
-    @apply color-[#409eff] text-xl font-bold;
+    @apply color-[var(--md-sys-color-primary)] text-xl font-bold;
   }
 
   .txt {

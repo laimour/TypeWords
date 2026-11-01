@@ -167,7 +167,7 @@ useSeoMeta({
       <div class="max-w-[1200px] mx-auto px-4 sm:px-8 h-15 flex items-center gap-8">
         <!-- Logo -->
         <div
-          class="text-[1.1rem] font-semibold shrink-0 bg-gradient-to-r from-[#bd34fe] to-[#41d1ff] bg-clip-text text-transparent [-webkit-background-clip:text] [-webkit-text-fill-color:transparent]"
+          class="text-[1.1rem] font-semibold shrink-0 bg-gradient-to-r from-[var(--md-sys-color-primary)] to-[var(--md-sys-color-tertiary)] bg-clip-text text-transparent [-webkit-background-clip:text] [-webkit-text-fill-color:transparent]"
         >
           {{ APP_NAME }}
         </div>
@@ -247,7 +247,7 @@ useSeoMeta({
               <a
                 :href="GITHUB"
                 target="_blank"
-                class="inline-flex items-center gap-2 text-[1rem] font-semibold text-[#7c3aed] no-underline px-3.5 py-1.5 rounded-full border border-[rgba(124,58,237,.3)] bg-[rgba(124,58,237,.06)] hover:bg-[rgba(124,58,237,.12)] transition-all duration-150 cursor-pointer"
+                class="inline-flex items-center gap-2 text-[1rem] font-semibold text-[var(--md-sys-color-primary)] no-underline px-3.5 py-1.5 rounded-full border border-[rgba(124,58,237,.3)] bg-[rgba(124,58,237,.06)] hover:bg-[rgba(124,58,237,.12)] transition-all duration-150 cursor-pointer"
               >
                 <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor" class="shrink-0">
                   <path
@@ -261,7 +261,7 @@ useSeoMeta({
             <!-- Title -->
             <h1 class="hero-title flex flex-col mt-0 mb-4 leading-[1.08]">
               <span
-                class="text-[clamp(3rem,8vw,5.5rem)] bg-gradient-to-r from-[#bd34fe] via-[#7c3aed] to-[#41d1ff] bg-clip-text text-transparent [-webkit-background-clip:text] [-webkit-text-fill-color:transparent]"
+                class="text-[clamp(3rem,8vw,5.5rem)] bg-gradient-to-r from-[var(--md-sys-color-primary)] via-[var(--md-sys-color-primary)] to-[var(--md-sys-color-tertiary)] bg-clip-text text-transparent [-webkit-background-clip:text] [-webkit-text-fill-color:transparent]"
               >
                 {{ APP_NAME }}
               </span>
@@ -286,11 +286,11 @@ useSeoMeta({
             <!-- Perks inline -->
             <div class="flex gap-4 sm:gap-6 justify-center lg:justify-start flex-wrap mb-7">
               <div class="flex items-center gap-1.5 text-[.85rem] text-[var(--hw-text-2)]">
-                <span class="w-1.5 h-1.5 rounded-full bg-[#7c3aed] shrink-0 opacity-80"></span>7
+                <span class="w-1.5 h-1.5 rounded-full bg-[var(--md-sys-color-primary)] shrink-0 opacity-80"></span>7
                 {{ $t('hero_perk_modes') }}
               </div>
               <div class="flex items-center gap-1.5 text-[.85rem] text-[var(--hw-text-2)]">
-                <span class="w-1.5 h-1.5 rounded-full bg-[#2563eb] shrink-0 opacity-80"></span>50+
+                <span class="w-1.5 h-1.5 rounded-full bg-[var(--md-sys-color-secondary)] shrink-0 opacity-80"></span>50+
                 {{ $t('hero_perk_dicts') }}
               </div>
               <div class="flex items-center gap-1.5 text-[.85rem] text-[var(--hw-text-2)]">
@@ -329,7 +329,7 @@ useSeoMeta({
               class="flex gap-3 justify-center lg:justify-start flex-col sm:flex-row items-stretch sm:items-center flex-wrap"
             >
               <button
-                class="inline-flex items-center justify-center gap-2 px-7 h-12 rounded-xl font-semibold text-[.97rem] text-white bg-gradient-to-r from-[#7c3aed] to-[#2563eb] border-none shadow-[0_4px_20px_rgba(124,58,237,.32)] cursor-pointer hover:-translate-y-0.5 hover:shadow-[0_6px_28px_rgba(124,58,237,.42)] transition-all duration-200 sm:w-auto"
+                class="inline-flex items-center justify-center gap-2 px-7 h-12 rounded-xl font-semibold text-[.97rem] text-white bg-gradient-to-r from-[var(--md-sys-color-primary)] to-[var(--md-sys-color-secondary)] border-none shadow-[0_4px_20px_rgba(124,58,237,.32)] cursor-pointer hover:-translate-y-0.5 hover:shadow-[0_6px_28px_rgba(124,58,237,.42)] transition-all duration-200 sm:w-auto"
                 @click="navigateTo('/words')"
               >
                 <svg
@@ -347,7 +347,7 @@ useSeoMeta({
                 {{ $t('hero_cta_start') }}
               </button>
               <a
-                class="inline-flex items-center justify-center gap-2 px-7 h-12 rounded-xl font-semibold text-[.97rem] text-[var(--hw-text)] bg-transparent border border-solid border-[var(--hw-border)] no-underline hover:bg-[rgba(124,58,237,.06)] hover:border-[#7c3aed] hover:text-[#7c3aed] transition-all duration-200 sm:w-auto"
+                class="inline-flex items-center justify-center gap-2 px-7 h-12 rounded-xl font-semibold text-[.97rem] text-[var(--hw-text)] bg-transparent border border-solid border-[var(--hw-border)] no-underline hover:bg-[rgba(124,58,237,.06)] hover:border-[var(--md-sys-color-primary)] hover:text-[var(--md-sys-color-primary)] transition-all duration-200 sm:w-auto"
                 :href="GITHUB"
                 target="_blank"
               >
@@ -365,7 +365,7 @@ useSeoMeta({
               <a
                 :href="Origin"
                 target="_blank"
-                class="inline-flex items-center gap-1.5 text-[var(--hw-text-3)] no-underline hover:text-[#7c3aed] transition-colors duration-150"
+                class="inline-flex items-center gap-1.5 text-[var(--hw-text-3)] no-underline hover:text-[var(--md-sys-color-primary)] transition-colors duration-150"
               >
                 <svg
                   width="14"
@@ -428,7 +428,7 @@ useSeoMeta({
                 class="bg-[var(--hw-bg-card)] border-2 rounded-2xl shadow-[var(--hw-shadow-lg)] overflow-hidden outline-none transition-all duration-250"
                 :class="
                   demoFocused
-                    ? 'border-[#7c3aed] shadow-[0_0_0_4px_rgba(124,58,237,.14),var(--hw-shadow-lg)]'
+                    ? 'border-[var(--md-sys-color-primary)] shadow-[0_0_0_4px_rgba(124,58,237,.14),var(--hw-shadow-lg)]'
                     : 'border-[var(--hw-border)] demo-idle-border'
                 "
                 tabindex="0"
@@ -451,7 +451,7 @@ useSeoMeta({
                       :class="
                         demoFocused
                           ? 'bg-[rgba(16,185,129,.12)] text-[#059669]'
-                          : 'bg-[rgba(124,58,237,.08)] text-[#7c3aed]'
+                          : 'bg-[rgba(124,58,237,.08)] text-[var(--md-sys-color-primary)]'
                       "
                       >{{ demoFocused ? '● ' + $t('demo_typing_status') : '○ ' + $t('demo_click_to_activate') }}</span
                     >
@@ -484,7 +484,7 @@ useSeoMeta({
                       class="text-[.82rem] leading-[1.6] flex flex-col gap-0.5"
                     >
                       <div class="italic text-[var(--hw-text-2)]">
-                        <span class="text-[#7c3aed] font-bold not-italic mr-1">{{ ei + 1 }}.</span>{{ ex.en }}
+                        <span class="text-[var(--md-sys-color-primary)] font-bold not-italic mr-1">{{ ei + 1 }}.</span>{{ ex.en }}
                       </div>
                       <div class="text-[.78rem] text-[var(--hw-text-3)] not-italic pl-3.5">{{ ex.zh }}</div>
                     </div>
@@ -507,7 +507,7 @@ useSeoMeta({
                       v-for="(_, i) in demoWords"
                       :key="i"
                       class="w-1.5 h-1.5 rounded-full transition-colors duration-200"
-                      :class="i === demoIdx ? 'bg-[#7c3aed]' : 'bg-[var(--hw-border)]'"
+                      :class="i === demoIdx ? 'bg-[var(--md-sys-color-primary)]' : 'bg-[var(--hw-border)]'"
                     ></span>
                   </div>
                 </div>
@@ -536,16 +536,16 @@ useSeoMeta({
 <style scoped>
 /* CSS 变量主题令牌 */
 .hw {
-  --hw-bg: #f4f5f7;
-  --hw-bg-card: #ffffff;
-  --hw-bg-nav: rgba(244, 245, 247, 0.88);
-  --hw-border: #e2e4e8;
-  --hw-text: #0d0d0d;
-  --hw-text-2: #555e6e;
-  --hw-text-3: #585d66;
-  --hw-shadow-sm: 0 1px 4px rgba(0, 0, 0, 0.06);
-  --hw-shadow-md: 0 4px 20px rgba(0, 0, 0, 0.09);
-  --hw-shadow-lg: 0 12px 48px rgba(0, 0, 0, 0.11);
+  --hw-bg: var(--md-sys-color-surface);
+  --hw-bg-card: var(--md-sys-color-surface-container-low);
+  --hw-bg-nav: color-mix(in srgb, var(--md-sys-color-surface) 88%, transparent);
+  --hw-border: var(--md-sys-color-outline-variant);
+  --hw-text: var(--md-sys-color-on-surface);
+  --hw-text-2: var(--md-sys-color-on-surface-variant);
+  --hw-text-3: var(--md-sys-color-on-surface-variant);
+  --hw-shadow-sm: var(--md-sys-elevation-1);
+  --hw-shadow-md: var(--md-sys-elevation-2);
+  --hw-shadow-lg: var(--md-sys-elevation-3);
   background: var(--hw-bg);
   color: var(--hw-text);
 }
@@ -571,10 +571,10 @@ useSeoMeta({
   @apply inline-flex items-center gap-1.5 text-[.78rem] font-bold tracking-[.03em] px-3.5 py-1.5 rounded-full border;
 }
 .value-pill--purple {
-  @apply border-[rgba(124,58,237,.35)] text-[#7c3aed] bg-[rgba(124,58,237,.07)];
+  @apply border-[rgba(124,58,237,.35)] text-[var(--md-sys-color-primary)] bg-[rgba(124,58,237,.07)];
 }
 .value-pill--blue {
-  @apply border-[rgba(37,99,235,.35)] text-[#2563eb] bg-[rgba(37,99,235,.07)];
+  @apply border-[rgba(37,99,235,.35)] text-[var(--md-sys-color-secondary)] bg-[rgba(37,99,235,.07)];
 }
 .value-pill--green {
   @apply border-[rgba(16,185,129,.35)] text-[#059669] bg-[rgba(16,185,129,.07)];
@@ -624,7 +624,7 @@ useSeoMeta({
   gap: 8px;
   font-size: 0.88rem;
   font-weight: 600;
-  color: #7c3aed;
+  color: var(--md-sys-color-primary);
   background: rgba(124, 58, 237, 0.09);
   border: 1.5px solid rgba(124, 58, 237, 0.35);
   border-radius: 999px;

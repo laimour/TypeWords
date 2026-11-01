@@ -266,7 +266,7 @@ function onSelectCell(cell: Cell) {
   min-height: 36px;
   border: none;
   border-radius: 8px;
-  background: var(--color-second, #f3f4f6);
+  background: var(--md-sys-color-surface-container-low);
   color: inherit;
   font-size: 14px;
   cursor: pointer;
@@ -274,7 +274,7 @@ function onSelectCell(cell: Cell) {
   transition: background 0.15s;
 
   &:hover {
-    filter: brightness(0.97);
+    background: var(--md-sys-color-surface-container-high);
   }
 
   &--muted {
@@ -282,17 +282,17 @@ function onSelectCell(cell: Cell) {
   }
 
   &--marked {
-    background: #409eff;
-    color: #fff;
+    background: var(--md-sys-color-primary);
+    color: var(--md-sys-color-on-primary);
     font-weight: 600;
   }
 
   &--today {
-    box-shadow: 0 0 0 2px #409eff inset;
+    box-shadow: inset 0 0 0 2px var(--md-sys-color-primary);
   }
 
   &--marked.cal-cell--today {
-    box-shadow: 0 0 0 2px #fff inset;
+    box-shadow: inset 0 0 0 2px var(--md-sys-color-on-primary);
   }
 }
 </style>

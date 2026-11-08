@@ -19,12 +19,20 @@ export type StudyDayRow = Statistics & { dictName: string }
 export interface OverviewMetrics {
   mastered: number
   masteredSub: string
+  /** 已掌握占该口径总词数的百分比（环形进度） */
+  masteredPct: number
   due: number
   dueSub: string
+  /** 待复习占已掌握的百分比（环形进度） */
+  duePct: number
   remaining: number
   remainingSub: string
+  /** 剩余生词占该口径总词数的百分比（环形进度） */
+  remainingPct: number
   total: number
   totalSub: string
+  /** 该口径的学习进度百分比（已学 / 总数，环形进度） */
+  totalPct: number
 }
 
 /** 我的词典迷你卡数据 */
@@ -42,6 +50,8 @@ export interface DictCardItem {
 /** 单元环形进度数据 */
 export interface UnitRingItem {
   name: string
+  /** 展示用单元名（Unit 4 / 单元 4） */
+  label: string
   learned: number
   total: number
   percent: number

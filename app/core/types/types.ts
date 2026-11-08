@@ -144,6 +144,10 @@ export interface Dict extends DictResource {
   unitOffsets?: Record<string, number>
   /** 是否已从旧 lastLearnIndex 迁移过单元进度 */
   unitProgressInitialized?: boolean
+  /** 临时每日目标（仅 tempPerDayDate 当天生效，优先于 perDayStudyNumber） */
+  tempPerDayNumber?: number
+  /** 临时每日目标的生效日期 YYYY-MM-DD */
+  tempPerDayDate?: string
   /** 单元标识是否已升级为名字制；旧数字制存档的 unitWordKeys 不做重放（视为无效数据） */
   unitNameSchema?: boolean
   //后端字段

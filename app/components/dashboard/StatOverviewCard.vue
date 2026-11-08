@@ -3,7 +3,7 @@ import { ref } from 'vue'
 import MsIcon from './MsIcon.vue'
 import type { OverviewMetrics } from './types'
 
-// 数据概览卡（demo/index.html 数据概览卡实装版）：词典 / 单元 单选胶囊切换 4 个指标
+// 数据概览卡：词典 / 单元 单选胶囊切换 4 个指标，每个指标右侧带环形进度
 const props = defineProps<{
   dictScope: OverviewMetrics
   unitScope: OverviewMetrics
@@ -32,36 +32,88 @@ const current = () => (scope.value === 'dict' ? props.dictScope : props.unitScop
       </div>
       <div class="stat-grid">
         <div class="stat-tile">
-          <div class="stat-head">
-            <MsIcon name="task_alt" :size="18" />
-            <span class="stat-label">{{ $t('m3e_mastered') }}</span>
+          <div class="stat-main">
+            <div class="stat-head">
+              <MsIcon name="task_alt" :size="18" />
+              <span class="stat-label">{{ $t('m3e_mastered') }}</span>
+            </div>
+            <div class="stat-num">{{ current().mastered }} {{ $t('m3e_words_unit') }}</div>
+            <div class="m3e-card-sub">{{ current().masteredSub }}</div>
           </div>
-          <div class="stat-num">{{ current().mastered }} {{ $t('m3e_words_unit') }}</div>
-          <div class="m3e-card-sub">{{ current().masteredSub }}</div>
+          <m-progress
+            class="stat-ring"
+            variant="circular"
+            :value="current().masteredPct"
+            max="100"
+            shape="wavy"
+            size="56"
+            thickness="5"
+            show-label
+            :aria-label="$t('m3e_mastered')"
+          ></m-progress>
         </div>
         <div class="stat-tile">
-          <div class="stat-head">
-            <MsIcon name="schedule" :size="18" />
-            <span class="stat-label">{{ $t('m3e_due_review') }}</span>
+          <div class="stat-main">
+            <div class="stat-head">
+              <MsIcon name="schedule" :size="18" />
+              <span class="stat-label">{{ $t('m3e_due_review') }}</span>
+            </div>
+            <div class="stat-num">{{ current().due }} {{ $t('m3e_words_unit') }}</div>
+            <div class="m3e-card-sub">{{ current().dueSub }}</div>
           </div>
-          <div class="stat-num">{{ current().due }} {{ $t('m3e_words_unit') }}</div>
-          <div class="m3e-card-sub">{{ current().dueSub }}</div>
+          <m-progress
+            class="stat-ring"
+            variant="circular"
+            :value="current().duePct"
+            max="100"
+            shape="wavy"
+            size="56"
+            thickness="5"
+            show-label
+            :aria-label="$t('m3e_due_review')"
+          ></m-progress>
         </div>
         <div class="stat-tile">
-          <div class="stat-head">
-            <MsIcon name="auto_stories" :size="18" />
-            <span class="stat-label">{{ $t('m3e_remaining_new') }}</span>
+          <div class="stat-main">
+            <div class="stat-head">
+              <MsIcon name="auto_stories" :size="18" />
+              <span class="stat-label">{{ $t('m3e_remaining_new') }}</span>
+            </div>
+            <div class="stat-num">{{ current().remaining }} {{ $t('m3e_words_unit') }}</div>
+            <div class="m3e-card-sub">{{ current().remainingSub }}</div>
           </div>
-          <div class="stat-num">{{ current().remaining }} {{ $t('m3e_words_unit') }}</div>
-          <div class="m3e-card-sub">{{ current().remainingSub }}</div>
+          <m-progress
+            class="stat-ring"
+            variant="circular"
+            :value="current().remainingPct"
+            max="100"
+            shape="wavy"
+            size="56"
+            thickness="5"
+            show-label
+            :aria-label="$t('m3e_remaining_new')"
+          ></m-progress>
         </div>
         <div class="stat-tile">
-          <div class="stat-head">
-            <MsIcon name="library_books" :size="18" />
-            <span class="stat-label">{{ $t('total_words') }}</span>
+          <div class="stat-main">
+            <div class="stat-head">
+              <MsIcon name="library_books" :size="18" />
+              <span class="stat-label">{{ $t('total_words') }}</span>
+            </div>
+            <div class="stat-num">{{ current().total }} {{ $t('m3e_words_unit') }}</div>
+            <div class="m3e-card-sub">{{ current().totalSub }}</div>
           </div>
-          <div class="stat-num">{{ current().total }} {{ $t('m3e_words_unit') }}</div>
-          <div class="m3e-card-sub">{{ current().totalSub }}</div>
+          <m-progress
+            class="stat-ring"
+            variant="circular"
+            :value="current().totalPct"
+            max="100"
+            shape="wavy"
+            size="56"
+            thickness="5"
+            show-label
+            :aria-label="$t('total_words')"
+          ></m-progress>
         </div>
       </div>
     </div>
@@ -101,10 +153,20 @@ const current = () => (scope.value === 'dict' ? props.dictScope : props.unitScop
 .stat-tile {
   background: var(--mtrl-sys-color-surface-container-low);
   border-radius: 16px;
-  padding: 18px;
+  padding: 16px 14px 16px 18px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.stat-main {
+  flex: 1;
+  min-width: 0;
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 6px;
+}
+.stat-ring {
+  flex: 0 0 auto;
 }
 .stat-head {
   display: flex;
@@ -117,10 +179,11 @@ const current = () => (scope.value === 'dict' ? props.dictScope : props.unitScop
   font-size: 13px;
 }
 .stat-num {
-  font-size: 32px;
+  font-size: 26px;
   font-weight: 700;
   color: var(--mtrl-sys-color-on-surface);
   letter-spacing: 0.5px;
+  line-height: 1.15;
 }
 @media (max-width: 1199px) {
   .stat-grid {

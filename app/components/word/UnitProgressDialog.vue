@@ -11,8 +11,10 @@ import {
   setUnitOffset,
   type DictUnit,
 } from '@/core/utils/dict-units.ts'
+import { useUnitLabel } from '@/core/composables/useUnitLabel.ts'
 
 const Dialog = defineAsyncComponent(() => import('@/base/dialog/Dialog.vue'))
+const unitLabel = useUnitLabel()
 
 const props = defineProps<{
   /** 要调整进度的单元 */
@@ -72,7 +74,7 @@ function markAllLearned() {
 </script>
 
 <template>
-  <Dialog v-model="model" padding :title="unit ? `${unit.name} · 调整进度` : '调整进度'">
+  <Dialog v-model="model" padding :title="unit ? `${unitLabel(unit.name)} · ${$t('m3e_adjust_progress')}` : $t('m3e_adjust_progress')">
     <div class="unit-dialog" v-if="unit">
       <div class="flex justify-between items-center text-sm">
         <span>已学 {{ value }} / {{ unit.total }} 词</span>

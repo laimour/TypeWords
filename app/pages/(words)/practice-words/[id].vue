@@ -7,7 +7,7 @@ import { useRuntimeStore } from '@/core/stores/runtime.ts'
 import type { Dict, TaskWords, Word } from '@/core/types/types.ts'
 import { useStartKeyboardEventListener } from '@/core/hooks/event.ts'
 import useTheme from '@/core/hooks/theme.ts'
-import { _getDictDataByUrl, resourceWrap, shuffle, throttle } from '@/core/utils'
+import { _getDictDataByUrl, isDictIdMatch, resourceWrap, shuffle, throttle } from '@/core/utils'
 import { useRoute, useRouter } from 'vue-router'
 import Footer from '@/components/word/Footer.vue'
 import Panel from '@/components/Panel.vue'
@@ -254,10 +254,11 @@ async function loadDict() {
   let dictId = route.params.id
   if (dictId) {
     //先在自己的词典列表里面找，如果没有再在资源列表里面找
-    dict = store.word.bookList.find(v => v.id === dictId)
+    //注意 id 可能是数字（官方资源），路由参数永远是字符串，必须用 isDictIdMatch 归一化比较
+    dict = store.word.bookList.find(v => isDictIdMatch(v, dictId))
     let r = await fetch(resourceWrap(DICT_LIST.WORD.ALL))
     let dict_list = await r.json()
-    if (!dict) dict = dict_list.flat().find(v => v.id === dictId) as Dict
+    if (!dict) dict = dict_list.flat().find(v => isDictIdMatch(v, dictId)) as Dict
     if (dict && dict.id) {
       //如果是不是自定义词典，就请求数据
       if (!dict.custom) dict = await _getDictDataByUrl(dict)
@@ -312,7 +313,7 @@ async function initData(initVal?: TaskWords, init: boolean = false) {
 
   // 初始化 Question
   let dictId: any = route.params.id
-  let d = store.word.bookList.find(v => v.id === dictId)
+  let d = store.word.bookList.find(v => isDictIdMatch(v, dictId))
   if (!d) d = store.sdict
   if (!d?.id) return router.push('/words')
   allWords = shuffle(d.words)

@@ -3,8 +3,10 @@ import { defineAsyncComponent, watch } from 'vue'
 import { BaseButton, Toast } from '@/base'
 import type { Dict } from '@/core/types/types'
 import type { DictUnit } from '@/core/utils/dict-units.ts'
+import { useUnitLabel } from '@/core/composables/useUnitLabel.ts'
 
 const Dialog = defineAsyncComponent(() => import('@/base/dialog/Dialog.vue'))
+const unitLabel = useUnitLabel()
 
 const props = defineProps<{
   dict: Dict
@@ -93,7 +95,7 @@ function save() {
   <Dialog
     v-model="model"
     padding
-    :title="unit ? `${unit.name} · 编辑单词（${unit.total} 词）` : '新建单元 · 选择单词'"
+    :title="unit ? `${unitLabel(unit.name)} · 编辑单词（${unit.total} 词）` : '新建单元 · 选择单词'"
   >
     <div class="picker-dialog">
       <p class="hint">单元由名字标识，大小由实际选中的单词数量决定，之后可随时增删单词调整。</p>

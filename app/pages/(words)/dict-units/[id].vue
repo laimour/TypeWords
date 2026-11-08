@@ -14,6 +14,7 @@ import { flushStatToStore } from '@/core/composables/usePracticePersistence'
 import { useDataSyncPersistence } from '@/core/composables/useDataSyncPersistence.ts'
 import { usePracticeWordPersistence } from '@/core/composables/practice-words/practice-word-session.ts'
 import { createStudyTask } from '@/core/composables/practice-words/study-task.ts'
+import { useUnitLabel } from '@/core/composables/useUnitLabel.ts'
 import {
   applyUnitWordKeys,
   ensureUnitOffsets,
@@ -41,6 +42,7 @@ const runtimeStore = useRuntimeStore()
 const { nav, back } = useNav()
 const wordPersistence = usePracticeWordPersistence()
 const dataSync = useDataSyncPersistence()
+const unitLabel = useUnitLabel()
 
 const dictId = computed(() => String(route.params.id ?? ''))
 const loading = ref(true)
@@ -184,7 +186,7 @@ async function deleteUnitAction(unit: DictUnit) {
   removeUnit(dict.value, unit.name)
   await discardRunningTask()
   await dataSync.saveDictState()
-  Toast.success(`「${unit.name}」已删除，成员单词保留在词库中`)
+  Toast.success(`「${unitLabel(unit.name)}」已删除，成员单词保留在词库中`)
 }
 
 function unitInfo(unit: DictUnit) {
@@ -217,7 +219,7 @@ async function resetUnit(unit: DictUnit) {
   resetUnitOffsets(dict.value, unit.name)
   await discardRunningTask()
   await dataSync.saveDictState()
-  Toast.success(`${unit.name} 进度已重置`)
+  Toast.success(`${unitLabel(unit.name)} 进度已重置`)
 }
 
 async function resetAll() {
@@ -321,7 +323,7 @@ async function editWords() {
           :class="{ active: dict.activeUnit === unit.name && dict.studyMode === 'unit', done: unitInfo(unit).learned >= unit.total }"
         >
           <div class="flex justify-between items-center">
-            <span class="font-bold">{{ unit.name }}</span>
+            <span class="font-bold">{{ unitLabel(unit.name) }}</span>
             <span class="hint">{{ unit.total }} 词</span>
           </div>
           <div class="text-sm mt-1 text-[var(--md-sys-color-on-surface-variant)]">

@@ -44,9 +44,9 @@ const emit = defineEmits<{
             size="72"
             thickness="7"
             show-label
-            :aria-label="u.name"
+            :aria-label="u.label"
           ></m-progress>
-          <div class="u-name">{{ u.name }}</div>
+          <div class="u-name">{{ u.label }}</div>
           <div class="u-sub">
             {{ $t('m3e_word_progress', { a: u.learned, b: u.total }) }} · {{ u.status }}
           </div>

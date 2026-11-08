@@ -4,6 +4,7 @@ import isoWeek from 'dayjs/plugin/isoWeek'
 import { useBaseStore } from '@/core/stores/base.ts'
 import { useSettingStore } from '@/core/stores/setting.ts'
 import { usePracticeStore } from '@/core/stores/practice.ts'
+import { useRuntimeStore } from '@/core/stores/runtime.ts'
 import { BasePage, Toast } from '@/base'
 import { _getDictDataByUrl, resourceWrap, total, useNav } from '@/core/utils'
 import { useFetch } from '@vueuse/core'
@@ -12,12 +13,20 @@ import { WordPracticeMode } from '@/core/types/enum.ts'
 import { flushStatToStore } from '@/core/composables/usePracticePersistence'
 import { usePracticeWordPersistence } from '@/core/composables/practice-words/practice-word-session.ts'
 import { createStudyTask } from '@/core/composables/practice-words/study-task.ts'
+import { getFlowIdForMode } from '@/core/composables/practice-words/practice-flow-config.ts'
+import { getDefaultDict } from '@/core/types/func.ts'
 import { getPracticeWordCacheLocal } from '@/core/utils/cache.ts'
+import {
+  getEffectiveDailyGoal,
+  isTempDailyGoalActive,
+} from '@/core/utils/daily-goal.ts'
+import { useUnitLabel } from '@/core/composables/useUnitLabel.ts'
 import {
   type DictUnit,
   getActiveUnit,
   getDictUnits,
   getNextUnfinishedUnit,
+  getOverallUnitProgress,
   getUnitOffset,
   getUnitProgress,
 } from '@/core/utils/dict-units.ts'
@@ -30,6 +39,7 @@ import UnitRingsCard from '@/components/dashboard/UnitRingsCard.vue'
 import MyDictsCard from '@/components/dashboard/MyDictsCard.vue'
 import RecommendCard from '@/components/dashboard/RecommendCard.vue'
 import StudyDayDialog from '@/components/dashboard/StudyDayDialog.vue'
+import DailyGoalDialog from '@/components/dashboard/DailyGoalDialog.vue'
 import type { DictCardItem, HeatCell, OverviewMetrics, StudyDayRow, UnitRingItem } from '@/components/dashboard/types'
 import type { MsIconName } from '@/components/dashboard/icons'
 
@@ -38,6 +48,7 @@ dayjs.extend(isoWeek)
 const store = useBaseStore()
 const settingStore = useSettingStore()
 const statStore = usePracticeStore()
+const runtimeStore = useRuntimeStore()
 const wordPersistence = usePracticeWordPersistence()
 const { nav } = useNav()
 const { t: $t, locale: $locale } = useI18n()
@@ -109,9 +120,43 @@ function dayMs(d: dayjs.Dayjs) {
   return persisted + (cacheDaySpendMap.get(key) ?? 0) + (sessionDaySpendMap.get(key) ?? 0)
 }
 
+/** 当前词典已落库的学习统计（statistics 挂在各自词典上，用它区分「此词典」） */
+const dictStatistics = $computed(() => store.sdict.statistics ?? [])
+
+/**
+ * 当前词典总学习毫秒 = 该词典已落库统计 + 本地练习缓存（未结算的当次练习）。
+ * 内存里的 practice store 不再叠加：结算时已写入 statistics，叠加会重复计算。
+ */
+const dictTotalMs = $computed(() => {
+  let ms = 0
+  for (const s of dictStatistics) ms += s.spend ?? 0
+  for (const v of cacheDaySpendMap.values()) ms += v
+  return ms
+})
+
+/** 总学习时长文案：不足 1 小时只显示分钟，否则「X 小时 Y 分钟」 */
+const dictTotalText = $computed(() => {
+  const minutes = Math.round(dictTotalMs / 60000)
+  if (minutes < 60) return `${minutes} ${$t('m3e_minutes')}`
+  const hours = Math.floor(minutes / 60)
+  const rest = minutes % 60
+  return rest
+    ? `${hours} ${$t('m3e_hours')} ${rest} ${$t('m3e_minutes')}`
+    : `${hours} ${$t('m3e_hours')}`
+})
+
 const toMinutes = (ms: number) => Math.round(ms / 60000)
 
 const todayMinutes = $computed(() => toMinutes(dayMs(dayjs())))
+
+/** 今日已学新词数（落库 + 练习缓存；当前会话未落库但也没有缓存时兜底用内存值） */
+const todayNewWords = $computed(() => {
+  const key = dayjs().format('YYYY-MM-DD')
+  let n = persistedDayMap.get(key)?.newWords ?? 0
+  if (cacheDaySpendMap.has(key)) n += cacheStatStoreData?.newWordNumber ?? 0
+  else if (sessionDaySpendMap.has(key)) n += statStore.newWordNumber ?? 0
+  return n
+})
 
 /** 所有出现过学习记录的日期 key 集合 */
 const studyDayKeys = $computed(() => {
@@ -307,6 +352,74 @@ const monthDayCount = $computed(() => monthMinutesPoints.filter(v => v > 0).leng
 
 const masteredTotal = $computed(() => store.knownWordsSet.size)
 
+/* ===================== 官方词典词条懒加载（刷新后补拉） ===================== */
+
+/**
+ * 等全局存档（IndexedDB）应用完成。
+ * 不能只看 mount：store.load 之前 store.sdict 还是默认空词典，既补拉不了，
+ * 补拉结果也会被随后 setState 应用存档时覆盖掉（卡片会一直是「已完成」）。
+ * 与 dict-units/[id].vue 的 waitForStoreLoad 同一套路；超时兜底避免按钮永久卡住。
+ */
+function waitForStoreLoad(timeoutMs = 15000): Promise<void> {
+  if (store.load) return Promise.resolve()
+  return new Promise<void>(resolve => {
+    const timer = setTimeout(() => {
+      stop()
+      resolve()
+    }, timeoutMs)
+    const stop = watch(
+      () => store.load,
+      loaded => {
+        if (!loaded) return
+        clearTimeout(timer)
+        stop()
+        resolve()
+      }
+    )
+  })
+}
+
+/** 正在进行的补拉任务，避免并发重复请求 */
+let dictWordsTask: Promise<boolean> | null = null
+
+async function fetchDictWords(): Promise<boolean> {
+  await waitForStoreLoad()
+  const dict = store.sdict
+  if (!dict.id || dict.custom || dict.system || dict.words?.length || !dict.url) return false
+  try {
+    const fetched = await _getDictDataByUrl(dict)
+    if (!fetched?.words?.length) return false
+    const next = getDefaultDict({ ...fetched, words: fetched.words })
+    next.length = next.words.length
+    await store.changeDict(next)
+    //词条就位后重算今日任务：watch 依赖（id / lastLearnIndex）没变化，必须显式刷新
+    refreshTaskInfo()
+    return true
+  } catch (error) {
+    console.error('[dashboard] 词典词条加载失败', error)
+    return false
+  }
+}
+
+/**
+ * 确保当前词典的词条已经在内存里（并发调用共享同一个任务）。
+ * 官方词典（!custom && !system）的词条不落盘（shakeCommonDict 只保留自定义/系统词典的 words），
+ * 刷新后内存里是空的；旧首页 words-classic.init() 会在这里补拉一次，
+ * 仪表盘少了这一步 → 卡片统计为 0、单元列表为空、「开始」按钮误报「没有单词可学习」。
+ */
+function ensureDictWordsLoaded(): Promise<boolean> {
+  if (!dictWordsTask) {
+    dictWordsTask = fetchDictWords().finally(() => {
+      dictWordsTask = null
+    })
+  }
+  return dictWordsTask
+}
+
+onMounted(() => {
+  void ensureDictWordsLoaded()
+})
+
 /* ===================== 今日任务（进行中 / 已完成） ===================== */
 
 let taskNewCount = $ref(0)
@@ -338,6 +451,8 @@ const taskTag = $computed(() =>
   taskNewCount + taskReviewCount > 0 ? $t('m3e_in_progress') : $t('m3e_completed')
 )
 
+const taskInProgress = $computed(() => taskNewCount + taskReviewCount > 0)
+
 const randomReview = $computed({
   get: () => settingStore.autoAddRandomReviewWhenNoDue,
   set: (v: boolean) => {
@@ -345,6 +460,35 @@ const randomReview = $computed({
     refreshTaskInfo()
   },
 })
+
+/* ===================== 每日目标（固定 / 仅今天临时） ===================== */
+
+const unitLabel = useUnitLabel()
+const effectiveDailyGoal = $computed(() => getEffectiveDailyGoal(store.sdict))
+const tempGoalActive = $computed(() => isTempDailyGoalActive(store.sdict))
+
+/** 今日目标完成度：今日新学词数 / 生效的每日目标 */
+const todayGoalProgress = $computed(() => {
+  const goal = effectiveDailyGoal || 0
+  if (!goal) return 0
+  return Math.min(100, Math.round((todayNewWords / goal) * 100))
+})
+
+let goalDialogVisible = $ref(false)
+let goalDialogKind = $ref<'permanent' | 'temp'>('permanent')
+
+function openGoalDialog(kind: 'permanent' | 'temp') {
+  if (!hasDict) return Toast.warning($t('m3e_select_dict_first'))
+  goalDialogKind = kind
+  goalDialogVisible = true
+}
+
+async function onGoalSaved() {
+  refreshTaskInfo()
+  //目标变了，之前按旧目标生成的未完成练习任务就作废：
+  //否则点「开始」会从缓存恢复旧任务，看起来像“改了目标不生效”
+  await dropPendingPracticeCache()
+}
 
 /* ===================== 单元 / 词典进度 ===================== */
 
@@ -359,12 +503,12 @@ const unitCardData = $computed(() => {
     const info = getUnitProgress(store.sdict, activeUnit, ignoreSet, store.fsrsData)
     const next = getNextUnfinishedUnit(store.sdict)
     return {
-      title: activeUnit.name,
+      title: unitLabel(activeUnit.name),
       remaining: info.remaining,
       percent: info.percent,
       learned: info.learned,
       total: info.total,
-      nextName: next?.name ?? null,
+      nextName: next ? unitLabel(next.name) : null,
     }
   }
   // 无单元划分：回退整本进度
@@ -387,24 +531,68 @@ function goDictManage() {
 
 function startStudy(unitName?: string) {
   if (!hasDict) return Toast.warning($t('m3e_select_dict_first'))
-  if (!store.sdict.words.length) return Toast.warning($t('m3e_no_words'))
   if (unitName) {
     store.sdict.studyMode = 'unit'
     store.sdict.activeUnit = unitName
   }
+  void startStudyAfterWordsLoaded()
+}
+
+/**
+ * 能承载「今日学习」的练习模式。
+ * `wordPracticeMode` 是全局持久化设置：点过「开始复习」后它会被写成 Review，
+ * 若「开始」直接沿用，练习页就会一直打开复习界面（刷新也不恢复，因为设置已落库）。
+ */
+const STUDY_PRACTICE_MODES = new Set<WordPracticeMode>([
+  WordPracticeMode.System,
+  WordPracticeMode.Free,
+  WordPracticeMode.IdentifyOnly,
+  WordPracticeMode.DictationOnly,
+  WordPracticeMode.ListenOnly,
+  WordPracticeMode.Custom,
+])
+
+/** 开始学习时实际使用的模式：复习 / 随机复习 / 单词测试等会话性模式一律回落到 System */
+function resolveStudyMode(): WordPracticeMode {
+  const mode = settingStore.wordPracticeMode
+  return STUDY_PRACTICE_MODES.has(mode) ? mode : WordPracticeMode.System
+}
+
+/** 等词条就位再跳转，避免官方词典刷新后误报「没有单词可学习」 */
+async function startStudyAfterWordsLoaded() {
+  await ensureDictWordsLoaded()
+  if (!store.sdict.words.length) return Toast.warning($t('m3e_no_words'))
+  const mode = resolveStudyMode()
+  //未完成缓存属于别的流程（比如上次点的是「开始复习」）时不能续接，否则点「开始」还是复习界面
+  const cache = await getPracticeWordCacheLocal()
+  const cachedFlowId = (cache as any)?.sessionSnapshot?.flowId
+  if (cachedFlowId && cachedFlowId !== getFlowIdForMode(mode)) await dropPendingPracticeCache()
+  //也不复用别的页面（经典首页 / 单元页）上次塞进来的任务数据
+  runtimeStore.routeData = null
+  settingStore.wordPracticeMode = mode
   nav('/practice-words/' + store.sdict.id)
+}
+
+/**
+ * 丢弃「按旧目标算出来」的未完成练习缓存：先把已产生的学习统计落库（避免时长丢失），再清掉缓存。
+ * 开始复习、修改每日目标前都要调用，否则会续接到旧任务。
+ * @returns 是否真的存在并清掉了缓存
+ */
+async function dropPendingPracticeCache(): Promise<boolean> {
+  const cache = await getPracticeWordCacheLocal()
+  if (!cache) return false
+  flushStatToStore((cache as any)?.statStoreData)
+  await wordPersistence.clear()
+  return true
 }
 
 /** 开始复习：与 words-classic 的复习入口一致，先落库并清掉未完成的练习缓存，避免续接旧任务 */
 async function startReview() {
   if (!hasDict) return Toast.warning($t('m3e_select_dict_first'))
+  await ensureDictWordsLoaded()
   if (!store.sdict.words.length) return Toast.warning($t('m3e_no_words'))
   if (!taskReviewCount) return Toast.warning($t('m3e_no_review_words'))
-  const cache = await getPracticeWordCacheLocal()
-  if (cache) {
-    flushStatToStore((cache as any)?.statStoreData)
-    await wordPersistence.clear()
-  }
+  await dropPendingPracticeCache()
   settingStore.wordPracticeMode = WordPracticeMode.Review
   nav('/practice-words/' + store.sdict.id)
 }
@@ -432,10 +620,14 @@ const dueReviewTotal = $computed(() => {
 
 const remainingNew = $computed(() => {
   if (!hasDict) return 0
+  const totalWords = store.sdict.length || (store.sdict.words ?? []).length
   if (unitModeActive) {
-    return activeUnit ? Math.max(0, activeUnit.total - getUnitOffset(store.sdict, activeUnit)) : 0
+    // 词典口径 = 总词数 − Σ 各单元已学。
+    // 不能退回 lastLearnIndex：单元模式下它只指向第一个未完成单元，会把词典数字算成单元数字。
+    const learned = getOverallUnitProgress(store.sdict).learned
+    return Math.max(0, totalWords - learned)
   }
-  return Math.max(0, store.sdict.length - store.sdict.lastLearnIndex)
+  return Math.max(0, totalWords - store.sdict.lastLearnIndex)
 })
 
 const dictMetrics = $computed<OverviewMetrics>(() => {
@@ -449,19 +641,26 @@ const dictMetrics = $computed<OverviewMetrics>(() => {
     mastered = store.knownWordsSet.size
   }
   const pct = (n: number) => (totalWords ? Math.round((n / totalWords) * 100) : 0)
+  const learned = Math.max(0, totalWords - remainingNew)
   return {
     mastered,
     masteredSub: $t('m3e_mastered_ratio', { p: pct(mastered) }),
+    masteredPct: pct(mastered),
     due: dueReviewTotal,
     dueSub: dueReviewTotal > 0 ? $t('m3e_due_today', { n: dueReviewTotal }) : $t('m3e_today_no_due'),
+    // 待复习环 = 到期词占已掌握词的比例
+    duePct: mastered ? Math.min(100, Math.round((dueReviewTotal / mastered) * 100)) : 0,
     remaining: remainingNew,
     remainingSub: $t('m3e_dict_pending_all', { p: pct(remainingNew) }),
+    remainingPct: pct(remainingNew),
     total: totalWords,
     totalSub: $t('m3e_dict_total_sub', {
       name: store.sdict.name,
       c: store.collectWord.words.length,
       w: store.wrong.words.length,
     }),
+    // 总词数环 = 该词典的学习进度
+    totalPct: pct(learned),
   }
 })
 
@@ -470,12 +669,16 @@ const unitMetrics = $computed<OverviewMetrics>(() => {
     return {
       mastered: 0,
       masteredSub: '—',
+      masteredPct: 0,
       due: 0,
       dueSub: $t('m3e_unit_no_due'),
+      duePct: 0,
       remaining: 0,
       remainingSub: '—',
+      remainingPct: 0,
       total: 0,
       totalSub: $t('m3e_no_units_hint'),
+      totalPct: 0,
     }
   }
   const info = getUnitProgress(store.sdict, activeUnit, ignoreSet, store.fsrsData)
@@ -487,12 +690,16 @@ const unitMetrics = $computed<OverviewMetrics>(() => {
   return {
     mastered: info.mastered,
     masteredSub: $t('m3e_unit_mastered_detail', { a: info.learned, b: info.total, p: info.percent }),
+    masteredPct: info.total ? Math.round((info.mastered / info.total) * 100) : 0,
     due,
     dueSub: due > 0 ? $t('m3e_due_today', { n: due }) : $t('m3e_unit_no_due'),
+    duePct: info.mastered ? Math.min(100, Math.round((due / info.mastered) * 100)) : 0,
     remaining: info.remaining,
     remainingSub: $t('m3e_unit_pending', { p: pct }),
+    remainingPct: pct,
     total: info.total,
-    totalSub: activeUnit.name,
+    totalSub: unitLabel(activeUnit.name),
+    totalPct: info.percent,
   }
 })
 
@@ -510,6 +717,7 @@ const ringUnits = $computed<UnitRingItem[]>(() => {
     return [
       {
         name: store.sdict.name,
+        label: store.sdict.name,
         learned,
         total: totalWords,
         percent: totalWords ? Math.round((learned / totalWords) * 100) : 0,
@@ -523,6 +731,7 @@ const ringUnits = $computed<UnitRingItem[]>(() => {
     const current = u.name === activeUnit?.name
     return {
       name: u.name,
+      label: unitLabel(u.name),
       learned: off,
       total: u.total,
       percent: u.total ? Math.round((off / u.total) * 100) : 0,
@@ -630,12 +839,17 @@ const headSub = $computed(() =>
           class="m3e-span-6"
           :dict-name="hasDict ? store.sdict.name : '—'"
           :tag="taskTag"
+          :in-progress="taskInProgress"
           :minutes="todayMinutes"
-          :daily-goal="store.sdict.perDayStudyNumber || 0"
+          :new-words="todayNewWords"
+          :progress="todayGoalProgress"
+          :daily-goal="effectiveDailyGoal"
+          :temp-goal-active="tempGoalActive"
           v-model:random-review="randomReview"
           @play="startStudy()"
           @review="startReview()"
-          @add-word="addWord()"
+          @edit-goal="openGoalDialog('permanent')"
+          @temp-goal="openGoalDialog('temp')"
         />
 
         <UnitProgressCard
@@ -657,7 +871,7 @@ const headSub = $computed(() =>
           class="m3e-span-4 m3e-trend-span"
           :title="$t('m3e_study_stats')"
           icon="local_fire_department"
-          :value="todayMinutes"
+          :value-text="dictTotalText"
           :sub="$t('m3e_total_streak_sub', { d: totalDays, s: streakDays })"
           :peak="heatPeak"
           :weeks="heatWeeks"
@@ -706,7 +920,13 @@ const headSub = $computed(() =>
           @select="(u: UnitRingItem) => openUnitProgressByName(u.name)"
         />
 
-        <MyDictsCard class="m3e-span-12" :dicts="dictItems" @open="openDict" @add="nav('/dict-list')" />
+        <MyDictsCard
+          class="m3e-span-12"
+          :dicts="dictItems"
+          @open="openDict"
+          @add="nav('/dict-list')"
+          @add-word="addWord()"
+        />
 
         <RecommendCard
           v-if="recommendName"
@@ -718,6 +938,8 @@ const headSub = $computed(() =>
       </div>
 
       <UnitProgressDialog v-model="showUnitProgressDialog" :unit="editingUnit" />
+
+      <DailyGoalDialog v-model="goalDialogVisible" :kind="goalDialogKind" @saved="onGoalSaved" />
 
       <StudyDayDialog v-model="dayDialogVisible" :date-key="dayDialogDate" :rows="dayDialogRows" />
     </div>

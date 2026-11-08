@@ -10,6 +10,7 @@ import { useRoute, useRouter } from 'vue-router'
 import dayjs from 'dayjs'
 import isSameOrBefore from 'dayjs/plugin/isSameOrBefore'
 import { advancePointerPastFinishedUnits, ensureUnitOffsets, getActiveUnit, getUnitOffset } from '../utils/dict-units.ts'
+import { getEffectiveDailyGoal } from '../utils/daily-goal.ts'
 
 dayjs.extend(isSameOrBefore)
 
@@ -154,7 +155,8 @@ export function getCurrentStudyWord(): TaskWords {
 
     //忽略列表：简单词或已掌握
     const ignoreSet = [store.allIgnoreWordsSet, store.knownWordsSet][settingStore.ignoreSimpleWord ? 0 : 1]
-    const perDay = dict.perDayStudyNumber
+    //每日目标：临时目标（仅今天）优先于词典设置
+    const perDay = getEffectiveDailyGoal(dict)
     const start = activeUnit
       ? getUnitOffset(dict, activeUnit)
       : Math.min(Math.max(0, dict.lastLearnIndex), scopeWords.length)

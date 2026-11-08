@@ -4,6 +4,7 @@ import { useSettingStore } from '@/core/stores/setting.ts'
 import type { TaskWords, Word } from '@/core/types/types.ts'
 import { shuffle } from '@/core/utils'
 import { ensureUnitOffsets, getActiveUnit, getDictUnits, getUnitOffset } from '@/core/utils/dict-units.ts'
+import { getEffectiveDailyGoal } from '@/core/utils/daily-goal.ts'
 
 export interface StudyTaskScope {
   mode: 'book' | 'unit'
@@ -68,7 +69,7 @@ export function createStudyTask(): StudyTaskResult {
   const result = addRandomReviewWhenNoDue(getCurrentStudyWord(), {
     words,
     lastLearnIndex,
-    perDayStudyNumber: dict.perDayStudyNumber,
+    perDayStudyNumber: getEffectiveDailyGoal(dict),
     wordReviewRatio: settingStore.wordReviewRatio,
     ignoreSet: store.getIgnoreWordsSet(),
     enabled: settingStore.autoAddRandomReviewWhenNoDue,

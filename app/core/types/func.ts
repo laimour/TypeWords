@@ -78,6 +78,10 @@ export function getDefaultDict(val: Partial<Dict> = {}): Dict {
     unitProgressInitialized: undefined,
     /** 单元标识是否已升级为名字制；旧数字制存档的 unitWordKeys 不做重放（视为无效数据） */
     unitNameSchema: undefined,
+    /** 临时每日目标（仅 tempPerDayDate 当天生效）；占位键：checkRiskKey 按默认键名拷贝存档字段，缺了会导致刷新后临时目标丢失 */
+    tempPerDayNumber: undefined,
+    /** 临时每日目标的生效日期 YYYY-MM-DD；占位键，同上 */
+    tempPerDayDate: undefined,
 
     createdBy: '',
     enName: '',

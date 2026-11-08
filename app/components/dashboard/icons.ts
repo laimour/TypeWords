@@ -24,6 +24,7 @@ import favorite from '~icons/material-symbols/favorite?raw'
 import error from '~icons/material-symbols/error?raw'
 import school from '~icons/material-symbols/school?raw'
 import add from '~icons/material-symbols/add?raw'
+import edit from '~icons/material-symbols/edit?raw'
 import recommend from '~icons/material-symbols/recommend?raw'
 import check from '~icons/material-symbols/check?raw'
 import home from '~icons/material-symbols/home?raw'
@@ -53,6 +54,7 @@ export const msIcons = {
   error,
   school,
   add,
+  edit,
   recommend,
   check,
   home,

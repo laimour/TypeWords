@@ -13,6 +13,8 @@ const emit = defineEmits<{
   (e: 'open', item: DictCardItem): void
   /** 点击新建词典卡 */
   (e: 'add'): void
+  /** 添加单词（导入/手动粘贴到当前词典） */
+  (e: 'add-word'): void
 }>()
 
 type FilterKey = 'all' | 'builtin' | 'custom'
@@ -37,6 +39,11 @@ const filtered = computed(() => {
       <div class="m3e-card-title">
         <span class="m3e-title-chip"><MsIcon name="menu_book" :size="18" /></span>
         {{ $t('my_dictionaries') }}
+        <span class="m3e-head-actions">
+          <m-button variant="text" @click="emit('add-word')">
+            <span class="btn-inner"><MsIcon name="add" :size="18" />{{ $t('add_word') }}</span>
+          </m-button>
+        </span>
       </div>
       <m-chips selection="single" :value="filter" @change="onFilterChange">
         <m-chip value="all" :label="$t('m3e_filter_all')" />
@@ -74,6 +81,11 @@ const filtered = computed(() => {
 </template>
 
 <style scoped lang="scss">
+.btn-inner {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
 .dict-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));

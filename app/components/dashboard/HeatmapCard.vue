@@ -9,8 +9,10 @@ import type { HeatCell } from './types'
 const props = defineProps<{
   title: string
   icon: MsIconName
-  /** 主数值（分钟） */
-  value: number
+  /** 主数值（分钟）；传了 valueText 时可省略 */
+  value?: number
+  /** 主数值文案（自带单位，如「3 小时 20 分钟」），优先于 value */
+  valueText?: string
   sub: string
   peak: number
   /** 每一列代表一周，最多 7 个格子；null 表示范围外（留空） */
@@ -102,8 +104,11 @@ function onCellClick(cell: HeatCell | null) {
         <span class="m3e-head-actions">{{ $t('m3e_peak', { n: peak }) }}</span>
       </div>
 
-      <div class="big-num">
-        {{ value }}<span class="unit">{{ $t('m3e_minutes') }}</span>
+      <div class="big-num" :class="{ 'is-text': !!valueText }">
+        <template v-if="valueText">{{ valueText }}</template>
+        <template v-else
+          >{{ value ?? 0 }}<span class="unit">{{ $t('m3e_minutes') }}</span></template
+        >
       </div>
       <div class="m3e-card-sub">{{ sub }}</div>
 
@@ -174,6 +179,10 @@ function onCellClick(cell: HeatCell | null) {
     font-weight: 500;
     color: var(--mtrl-sys-color-on-surface-variant);
     margin-left: 8px;
+  }
+  // 文案型数值（如「3 小时 20 分钟」）字号略小，避免挤爆卡片
+  &.is-text {
+    font-size: 28px;
   }
 }
 

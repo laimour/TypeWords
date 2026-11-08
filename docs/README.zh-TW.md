@@ -30,7 +30,7 @@
 
 ## 線上訪問
 
-[https://typewords.cc](https://typewords.cc)
+[https://typewords-dws.pages.dev](https://typewords-dws.pages.dev)
 
 <img width="1920" height="1440" alt="practice words" src="/public/imgs/words.png" />
 <img width="1920" height="1440" alt="practice articles" src="/public/imgs/articles.png" />

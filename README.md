@@ -29,7 +29,9 @@
 
 ## Online Access
 
-<https://typewords.cc>
+<https://typewords-dws.pages.dev>
+
+This fork is deployed as a static site on Cloudflare Pages (built from this repository's `master` branch). The server-side `/api/word` and `/api/translate` proxy routes are not bundled in the static deployment, so the online dictionary lookup and translation features fall back to whatever the client already stores locally.
 
 <img width="1920" height="1440" alt="practice words" src="/public/imgs/words.png" />
 <img width="1920" height="1440" alt="practice articles" src="/public/imgs/articles.png" />

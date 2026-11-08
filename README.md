@@ -36,38 +36,51 @@
 
 ## Fork Enhancements (Material 3 Expressive Dashboard)
 
-This repository is a fork of [zyronon/TypeWords](https://github.com/zyronon/TypeWords). On top of the original project, this fork adds a Material 3 Expressive (M3E) UI layer and several learning-management pages.
+This repository is a fork of [zyronon/TypeWords](https://github.com/zyronon/TypeWords). On top of the original project, this fork adds a Material 3 Expressive (M3E) UI layer, a learning dashboard, and dictionary-unit management.
 
-### New Dashboard
+### Dashboard
 
-- `/words` now serves the new M3E dashboard, `/dashboard` is kept as a comparison entry, and `/words-classic` preserves the previous home page.
+- `/words` serves the new M3E dashboard, `/dashboard` is kept as a comparison entry, and `/words-classic` preserves the previous home page.
 - Built with the `mtrl` and `sober` web component libraries, with light/dark themes bridged through `app/assets/css/m3e-tokens.scss`.
-- Statistics area: KPI overview with dictionary / current-unit scope switching, heatmap study calendar (click a day to open its study records), and a 7-day bar chart.
-- Today task card: start review, add word, and jump back to the last practice position.
-- Unit progress cards with circular wavy progress, plus dialogs to adjust unit progress and pick which words of a unit to practice.
-- My dictionaries card with all / built-in / custom segmented filtering, and quick join for recommended dictionaries.
+- Today task card: minutes learned today **and** the number of new words learned today, a wavy linear progress bar (today's new words / effective daily goal), a running/completed status chip, a start-review action, and the random-review switch.
+- Daily goal: a fixed per-dictionary goal plus a **today-only temporary goal** (`临时修改`, with a `临时` badge and a restore action). Saving either goal invalidates the pending practice session so the new goal takes effect immediately.
+- Unit progress: cards and rings with circular wavy progress, unit names rendered through `useUnitLabel()` (`Unit {name}` / `单元 {name}`), plus dialogs to adjust unit progress and pick which words of a unit to practice.
+- Statistics: KPI overview with dictionary / current-unit scope switching, heatmap study calendar (click a day to open its study records), and 7-day bar chart.
+- My dictionaries card with all / built-in / custom segmented filtering, quick join for recommended dictionaries, and the word-import entry.
 
 ### New Pages and Utilities
 
-- `/dict-units/[id]`: dictionary unit detail page.
-- `/import-words`: word import page supporting multiple input formats.
-- `app/core/utils/dict-units.ts` and `app/core/utils/importWords.ts`: unit splitting and word import helpers.
+- `/dict-units/[id]`: dictionary unit detail page (create units, pick member words, adjust progress, switch study mode).
+- `/import-words`: word import page supporting multiple input formats and unit headings.
+- `app/core/utils/dict-units.ts`: unit splitting, unit progress offsets, and unit-pointer synchronisation.
+- `app/core/utils/daily-goal.ts`: effective daily goal resolution (temporary goal → dictionary goal) shared by every task builder.
+- `app/core/composables/useUnitLabel.ts`: unified unit-name rendering.
 - `server/api/word.get.ts` and `server/api/translate.get.ts`: local dictionary and translation API routes.
+
+### Recent Fixes
+
+- **Temporary daily goal is now persisted.** `getDefaultDict()` gained `tempPerDayNumber` / `tempPerDayDate` placeholder keys. The archive normaliser only copies keys that exist in the default dictionary, so the temporary goal used to be silently dropped on every reload (and on remote pulls).
+- **Official dictionaries are re-fetched on the dashboard.** Official word lists are not stored in the archive, so after a refresh the dashboard now hydrates them once the global archive is loaded (mirroring `words-classic.init()`). The card, the unit rings and the start button no longer report "no words to learn", and a failed fetch degrades to an honest message instead of a blank task.
+- **Dictionary ids are compared type-agnostically.** Official resource ids can be numbers while route params are strings; `isDictIdMatch()` is now used when resolving the dictionary on the practice page, fixing a silent redirect back to `/words`.
+- **The start button no longer inherits the review mode.** `wordPracticeMode` is a persisted global setting, and clicking *start review* used to leave it at `Review`, so the study button kept opening the review flow. The dashboard now normalises session-scoped modes back to `System`, drops a pending session that belongs to another flow, and clears stale route data.
+- **Zero-goal guard.** A stored goal of `0` falls back to the dictionary goal (and finally to `20`), and the goal dialog never saves less than one word.
 
 ### Other
 
-- i18n keys completed for all 14 locales.
+- i18n keys completed for all 14 locales, including the dashboard, unit and daily-goal strings (`m3e_*`).
 - `Cache-Control: no-cache` response headers for `/words`, `/articles`, `/setting` and `/dashboard` to avoid stale pages after a release.
 - Added dependencies: `mtrl ^0.10.8`, `sober ^1.1.10`.
 
 ### 中文说明
 
-- 本仓库是 [TypeWords](https://github.com/zyronon/TypeWords) 的 fork，在原有功能之上新增了 Material 3 Expressive 风格的仪表盘与词典单元相关页面。
+- 本仓库是 [TypeWords](https://github.com/zyronon/TypeWords) 的 fork，在原有功能之上新增了 Material 3 Expressive 风格的仪表盘、学习统计与词典单元管理。
 - `/words` 为新的 M3E 仪表盘首页，`/dashboard` 作为对照入口，`/words-classic` 保留旧版首页。
-- 统计区支持词典 / 当前单元口径切换，包含网格热力日历（点击某天可查看当天的学习记录）与近 7 日学习柱状图。
-- 今日任务卡支持开始复习、添加单词与回到上次练习位置；单元进度卡支持调整进度、挑选本单元要练习的单词。
-- 新增词典单元详情页 `/dict-units/[id]`、单词导入页 `/import-words`，以及本地词典 / 翻译接口。
-- 补齐 14 种语言的 i18n 文案，并为 `/words`、`/articles`、`/setting`、`/dashboard` 增加 `Cache-Control: no-cache` 响应头。
+- 今日任务卡：同时显示「今日已学分钟数」与「今日已学单词数」，波浪线性进度条按「今日新学词数 / 生效的每日目标」计算，另有进行中/已完成状态、开始复习与随机复习开关。
+- 每日目标：词典固定目标 + 仅今天生效的「临时修改」（带「临时」徽章、可恢复默认）；保存目标会作废未完成的旧任务，保证新目标立即生效。
+- 单元进度：卡片与环形进度，单元名统一由 `useUnitLabel()` 渲染（`Unit {name}` / `单元 {name}`），支持调整进度、挑选本单元练习单词。
+- 统计区：支持词典 / 当前单元口径切换，包含网格热力日历（点击某天可查看当天学习记录）与近 7 日学习柱状图；「我的词典」支持全部/内置/自定义分段筛选与导入入口。
+- 新增词典单元详情页 `/dict-units/[id]`、单词导入页 `/import-words`（支持单元标题）、单元进度工具 `app/core/utils/dict-units.ts`、有效每日目标工具 `app/core/utils/daily-goal.ts`、单元名渲染 `app/core/composables/useUnitLabel.ts`，以及本地词典 / 翻译接口。
+- 本 fork 修复：临时目标刷新后丢失；官方词典刷新后误报「没有单词可学习」；词典 id 数字/字符串比较导致点开始静默跳回；开始按钮沿用上次的复习模式；目标为 0 导致任务恒空。
 
 ## Features
 
@@ -142,4 +155,3 @@ Of course, sponsorship is not required for use—sharing the project, submitting
 
 <img width="300" height="390" alt="practice words" src="/public/imgs/zhifubao.png" />
 <img width="300" height="390" alt="practice words" src="/public/imgs/weixin.png" />
-

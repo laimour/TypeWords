@@ -40,6 +40,10 @@ This repository is a fork of [zyronon/TypeWords](https://github.com/zyronon/Type
 
 ### Dashboard
 
+<img alt="M3E dashboard: today task card with minutes and words learned, temporary daily goal, unit progress and KPI overview" src="/public/imgs/m3e-dashboard.png" width="1600" height="1060" />
+
+<img alt="M3E dashboard: study heatmaps, unit rings and dictionary cards" src="/public/imgs/m3e-dashboard-units.png" width="1600" height="1012" />
+
 - `/words` serves the new M3E dashboard, `/dashboard` is kept as a comparison entry, and `/words-classic` preserves the previous home page.
 - Built with the `mtrl` and `sober` web component libraries, with light/dark themes bridged through `app/assets/css/m3e-tokens.scss`.
 - Today task card: minutes learned today **and** the number of new words learned today, a wavy linear progress bar (today's new words / effective daily goal), a running/completed status chip, a start-review action, and the random-review switch.
@@ -147,11 +151,3 @@ If you're interested in this project, we welcome your contributions and will pro
 Before contributing, please communicate with the developers to avoid code conflicts.
 
 Thank you again for your contributions!
-
-
-## ❤️ Support TypeWords
-If TypeWords has been helpful to you, feel free to sponsor the project to support server operation and future development.  
-Of course, sponsorship is not required for use—sharing the project, submitting feedback, or contributing code are also highly valuable forms of support.
-
-<img width="300" height="390" alt="practice words" src="/public/imgs/zhifubao.png" />
-<img width="300" height="390" alt="practice words" src="/public/imgs/weixin.png" />

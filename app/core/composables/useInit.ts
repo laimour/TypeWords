@@ -2,8 +2,8 @@ import { APP_VERSION } from '../config/env'
 import { debounce } from '../utils'
 import type { BaseState, SettingState } from '../stores'
 import { useBaseStore, useRuntimeStore, useSettingStore } from '../stores'
-import { Supabase } from '../utils/supabase'
 import { ensureHashGuardBeforeInit, useDataSyncPersistence } from './useDataSyncPersistence'
+import { useWebDavSync } from './useWebDavSync'
 import { SyncDataType } from '../types'
 import type { SubscriptionCallbackMutation } from 'pinia'
 import { onUnmounted } from 'vue'
@@ -16,27 +16,27 @@ export function useInit() {
   const settingStore = useSettingStore()
   const runtimeStore = useRuntimeStore()
   const dataSync = useDataSyncPersistence()
+  const webdavSync = useWebDavSync()
   let initializing = false // 标记是否正在初始化
   let focus = true
   let fetching = false
   let fetching2 = false
   let restoreFetching = false
 
+  /** 练习页有独立的会话状态，切回页面时不在这里同步，避免替换 store 引用打断练习 */
+  const isPracticeRoute = () => /\/practice-(words|articles)\//.test(window.location.pathname)
+
   const onvisibilitychange = async () => {
     focus = !document.hidden
-    if (focus) {
-      try {
-        //当激活时，要先获取数据，以保证本地是最新的，以免本地老数据上传到后端覆盖新数据
-        if (restoreFetching) return
-        restoreFetching = true
-        await dataSync.syncData(
-          { [SyncDataType.dict]: null, [SyncDataType.setting]: null },
-          //只拉不推送
-          { pushWhenLocalNewer: false }
-        )
-      } finally {
-        restoreFetching = false
-      }
+    if (!focus) return
+    if (isPracticeRoute()) return
+    try {
+      if (restoreFetching) return
+      restoreFetching = true
+      // 切回页面时对齐一次远端（合并式同步，不会覆盖本地新增数据）
+      await webdavSync.syncAll({ reason: 'visibility' })
+    } finally {
+      restoreFetching = false
     }
   }
 
@@ -56,15 +56,15 @@ export function useInit() {
     document.removeEventListener('visibilitychange', onvisibilitychange)
 
     await ensureHashGuardBeforeInit()
-    // await userStore.init()
-    let dictData = await store.init()
-    let settingData = await settingStore.init()
-    if (dictData && settingData) {
-      await dataSync.syncData({
-        [SyncDataType.dict]: dictData,
-        [SyncDataType.setting]: settingData,
-      })
+    // 旧版本使用 Supabase 云同步，已由 WebDAV 取代：清掉遗留配置，避免后台继续请求旧后端
+    try {
+      localStorage.removeItem('supabase_config')
+    } catch {
+      // 忽略隐私模式下的存储异常
     }
+    // await userStore.init()
+    await store.init()
+    await settingStore.init()
     settingStore.load = true
     store.load = true
     console.timeEnd('init')
@@ -115,8 +115,10 @@ export function useInit() {
 
     runtimeStore.isNew = APP_VERSION.version > Number(settingStore.webAppVersion)
     // runtimeStore.isNew = true
-    runtimeStore.isError = Supabase.getStatus().status === 'error'
     window.umami?.track('host', { host: window.location.host })
+
+    // 打开站点时同步一次（未配置 WebDAV 时内部直接跳过）
+    void webdavSync.syncAll({ reason: 'startup' }).catch(() => {})
   }
 
   return init

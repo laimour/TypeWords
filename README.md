@@ -54,6 +54,16 @@ This repository is a fork of [zyronon/TypeWords](https://github.com/zyronon/Type
 - Statistics: KPI overview with dictionary / current-unit scope switching, heatmap study calendar (click a day to open its study records), and 7-day bar chart.
 - My dictionaries card with all / built-in / custom segmented filtering, quick join for recommended dictionaries, and the word-import entry.
 
+### WebDAV Cloud Sync
+
+- **Replaces the previous Supabase integration.** Sync now targets any WebDAV drive you own, so there is no backend to deploy and no third-party account beyond your own cloud storage.
+- Providers: 坚果云 (Nutstore), InfiniCLOUD, Nextcloud, ownCloud, Synology DSM, QNAP, pCloud, Yandex Disk, Koofr and 123云盘, plus a custom/self-hosted option. Choosing a provider fills in the WebDAV root URL automatically.
+- Data is written to `{WebDAV root}/{folder}/data.json` (folder defaults to `typewords-data`, editable in the settings page; renaming it triggers a sync so nothing is lost).
+- **Merge, never clobber:** every sync first pulls the remote snapshot and merges it into the local archive — dictionaries only present remotely are appended, and for dictionaries on both sides the words, units, study records, FSRS cards, notes and progress are unioned/compared, with local data winning on conflicts. The merged result is then written back over the remote file.
+- Sync triggers: opening the site, entering `/words` (including the sidebar word button), and finishing a study or review round. A circular button at the right of the dashboard header shows the state: plain sync icon (not configured or never synced), spinning (syncing), green check (success), yellow exclamation (bad URL / wrong credentials / network error).
+- Transport: requests go through a same-origin `/api/webdav` proxy (`server/api/webdav.post.ts`, or `functions/api/webdav.js` on Cloudflare Pages) because WebDAV servers rarely send CORS headers; static deployments without the proxy fall back to direct browser requests.
+- Supabase code is no longer used at runtime (`app/core/utils/supabase.ts` is kept only as dead code); the old `supabase_config` key is removed on startup.
+
 ### New Pages and Utilities
 
 - `/dict-units/[id]`: dictionary unit detail page (create units, pick member words, adjust progress, switch study mode).
@@ -87,6 +97,7 @@ This repository is a fork of [zyronon/TypeWords](https://github.com/zyronon/Type
 - 统计区：支持词典 / 当前单元口径切换，包含网格热力日历（点击某天可查看当天学习记录）与近 7 日学习柱状图；「我的词典」支持全部/内置/自定义分段筛选与导入入口。
 - 新增词典单元详情页 `/dict-units/[id]`、单词导入页 `/import-words`（支持单元标题）、单元进度工具 `app/core/utils/dict-units.ts`、有效每日目标工具 `app/core/utils/daily-goal.ts`、单元名渲染 `app/core/composables/useUnitLabel.ts`，以及本地词典 / 翻译接口。
 - 本 fork 修复：临时目标刷新后丢失；官方词典刷新后误报「没有单词可学习」；词典 id 数字/字符串比较导致点开始静默跳回；开始按钮沿用上次的复习模式；目标为 0 导致任务恒空。
+- **云同步已从 Supabase 改为 WebDAV**：数据写到 `{WebDAV 根地址}/{目录}/data.json`（目录默认 `typewords-data`，可在设置页改，改完自动同步一次）。每次同步先拉远端、以合并方式覆盖本地（远端独有词典整本追加；两边都有的词典按单词/单元/学习记录/FSRS/笔记/进度取并集或较新值，冲突时本地优先），再把合并后的完整数据覆盖回远端。同步时机：打开站点、进入 `/words`、学习或复习一轮结束；主页页头最右侧的圆形按钮显示「未配置/同步中/成功/失败」四态。设置页可选坚果云、InfiniCLOUD、Nextcloud、ownCloud、群晖、威联通、pCloud、Yandex、Koofr、123云盘或自定义地址。浏览器直连第三方 WebDAV 会被 CORS 拦截，因此走同源 `/api/webdav` 代理（本地 Node 版 `server/api/webdav.post.ts`，Cloudflare Pages 用 `functions/api/webdav.js`）。
 
 ## Features
 

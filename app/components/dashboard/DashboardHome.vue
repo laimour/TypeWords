@@ -40,6 +40,8 @@ import MyDictsCard from '@/components/dashboard/MyDictsCard.vue'
 import RecommendCard from '@/components/dashboard/RecommendCard.vue'
 import StudyDayDialog from '@/components/dashboard/StudyDayDialog.vue'
 import DailyGoalDialog from '@/components/dashboard/DailyGoalDialog.vue'
+import SyncButton from '@/components/dashboard/SyncButton.vue'
+import { useWebDavSync } from '@/core/composables/useWebDavSync.ts'
 import type { DictCardItem, HeatCell, OverviewMetrics, StudyDayRow, UnitRingItem } from '@/components/dashboard/types'
 import type { MsIconName } from '@/components/dashboard/icons'
 
@@ -418,6 +420,10 @@ function ensureDictWordsLoaded(): Promise<boolean> {
 
 onMounted(() => {
   void ensureDictWordsLoaded()
+  // 打开 /words（含从侧边栏点「单词」进入）时同步一次 WebDAV；未配置则内部直接跳过
+  void useWebDavSync()
+    .syncAll({ reason: 'words' })
+    .catch(() => {})
 })
 
 /* ===================== 今日任务（进行中 / 已完成） ===================== */
@@ -832,6 +838,9 @@ const headSub = $computed(() =>
           <h1>{{ headTitle }}</h1>
           <div class="sub">{{ headSub }}</div>
         </div>
+        <div class="m3e-head-actions">
+          <SyncButton />
+        </div>
       </div>
 
       <div class="m3e-grid">
@@ -1011,6 +1020,13 @@ m-card.m3e-card {
     color: var(--mtrl-sys-color-on-surface-variant);
     font-size: 14px;
     margin-top: 4px;
+  }
+  .m3e-head-actions {
+    margin-left: auto;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-shrink: 0;
   }
 }
 .m3e-grid {

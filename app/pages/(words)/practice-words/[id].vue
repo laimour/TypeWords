@@ -39,6 +39,7 @@ import { createStudyTask } from '@/core/composables/practice-words/study-task.ts
 import PrevAndNextWord from '@/components/word/PrevAndNextWord.vue'
 import type { PracticeNotifier } from '@/core/composables/practice-words/practice-flow-types.ts'
 import { usePracticeWordSession } from '@/core/composables/practice-words/usePracticeWordSession.ts'
+import { useWebDavSync } from '@/core/composables/useWebDavSync.ts'
 
 const settingStore = useSettingStore()
 const runtimeStore = useRuntimeStore()
@@ -384,6 +385,11 @@ async function complete() {
       settling = false
       runtimeStore.globalLoading = false
     }
+
+    // 学习一轮 / 复习一轮结束后立即同步一次（本地已结算、练习缓存已清理）
+    void useWebDavSync()
+      .syncAll({ reason: 'round-complete', force: true })
+      .catch(() => {})
   }
 }
 

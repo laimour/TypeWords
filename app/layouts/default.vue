@@ -10,7 +10,8 @@ import { useRoute, useRouter } from 'vue-router'
 import 'vue-virtual-scroller/dist/vue-virtual-scroller.css'
 import { useInit } from '@/core/composables/useInit.ts'
 import { useI18n } from 'vue-i18n'
-import { Supabase } from '@/core/utils/supabase.ts'
+import { isWebDavConfigured } from '@/core/utils/webdav.ts'
+import { useWebDavSync } from '@/core/composables/useWebDavSync.ts'
 import MiniProgram from '@/components/MiniProgram.vue'
 import WordCollectPopover from '@/components/word/WordCollectPopover.vue'
 import { msIcon } from '@/components/dashboard/icons'
@@ -52,6 +53,12 @@ function onRailChange(e: Event) {
   const value = (e as CustomEvent<{ value: string }>).detail?.value
   const item = railItems.find(i => i.value === value)
   if (item) router.push(item.path)
+  // 侧边栏点「单词」：即使已经在 /words（不会重新 mount）也同步一次
+  if (item?.value === 'words') {
+    void useWebDavSync()
+      .syncAll({ reason: 'words-nav' })
+      .catch(() => {})
+  }
 }
 
 watch(
@@ -75,7 +82,7 @@ const showIcon = $computed(() => {
 
 onMounted(() => {
   init()
-  window.umami?.track('sync', { check: Supabase.check() })
+  window.umami?.track('sync', { check: isWebDavConfigured() })
 })
 </script>
 
